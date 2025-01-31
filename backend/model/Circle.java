@@ -9,11 +9,20 @@ public class Circle extends Ellipse {
         this.radius = radius;
     }
 
-    @Override
+    /*@Override
     public String toString() {
         return String.format("Círculo [Centro: %s, Radio: %.2f]", centerPoint, radius);
     }
+    ¨*/
+    @Override
+    public String getFormat() {
+        return String.format("Centro: %s, Radio: %.2f", centerPoint, radius);
+    }
 
+    @Override
+    public String getName() {
+        return "Circulo";
+    }
 
     public double getRadius() {
         return radius;

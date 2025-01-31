@@ -3,7 +3,6 @@ package backend.model;
 public class Rectangle extends AbstractFigure {
 
     private final Point topLeft, bottomRight;
-    private static final String name = "Rectángulo";
 
     public Rectangle(Point topLeft, Point bottomRight) {
         this.topLeft = topLeft;
@@ -18,13 +17,11 @@ public class Rectangle extends AbstractFigure {
         return bottomRight;
     }
 
-
     public String getName(){
-        return name;
-    }
-    @Override
-    public String toString() {
-        return String.format("%s [ %s , %s ]", getName(), topLeft, bottomRight);
+        return "Rectángulo";
     }
 
+    public String getFormat(){
+        return String.format("%s , %s", topLeft, bottomRight);
+    }
 }
