@@ -29,11 +29,12 @@ public class PaintPane extends BorderPane {
 
 	// Botones Barra Izquierda
 	ToggleButton selectionButton = new ToggleButton("Seleccionar");
+	ToggleButton deleteButton = new ToggleButton("Borrar");
+	//TODO hacer un iterator (que itere) para iterar todas las posibles figuras (usando getName() :) ))
 	ToggleButton rectangleButton = new ToggleButton("Rectángulo");
 	ToggleButton circleButton = new ToggleButton("Círculo");
 	ToggleButton squareButton = new ToggleButton("Cuadrado");
 	ToggleButton ellipseButton = new ToggleButton("Elipse");
-	ToggleButton deleteButton = new ToggleButton("Borrar");
 
 	// Selector de color de relleno
 	ColorPicker fillColorPicker = new ColorPicker(defaultFillColor);
@@ -54,6 +55,7 @@ public class PaintPane extends BorderPane {
 		this.canvasState = canvasState;
 		this.statusPane = statusPane;
 		ToggleButton[] toolsArr = {selectionButton, rectangleButton, circleButton, squareButton, ellipseButton, deleteButton};
+		//todo misma aca, algo que itere
 		ToggleGroup tools = new ToggleGroup();
 		for (ToggleButton tool : toolsArr) {
 			tool.setMinWidth(90);
@@ -73,6 +75,7 @@ public class PaintPane extends BorderPane {
 		});
 
 		canvas.setOnMouseReleased(event -> {
+			//todo no mas else if
 			Point endPoint = new Point(event.getX(), event.getY());
 			if(startPoint == null) {
 				return ;
@@ -105,6 +108,7 @@ public class PaintPane extends BorderPane {
 		});
 
 		canvas.setOnMouseMoved(event -> {
+			//todo aaaa
 			Point eventPoint = new Point(event.getX(), event.getY());
 			boolean found = false;
 			StringBuilder label = new StringBuilder();
@@ -144,6 +148,7 @@ public class PaintPane extends BorderPane {
 		});
 
 		canvas.setOnMouseDragged(event -> {
+			//todo if(else if) then fix
 			if(selectionButton.isSelected()) {
 				Point eventPoint = new Point(event.getX(), event.getY());
 				double diffX = (eventPoint.getX() - startPoint.getX()) / 100;
@@ -174,6 +179,7 @@ public class PaintPane extends BorderPane {
 		});
 
 		deleteButton.setOnAction(event -> {
+			//todo elseif elseifelseif
 			if (selectedFigure != null) {
 				canvasState.deleteFigure(selectedFigure);
 				selectedFigure = null;
@@ -195,6 +201,7 @@ public class PaintPane extends BorderPane {
 			}
 			gc.setFill(figureColorMap.get(figure));
 			if(figure instanceof Rectangle) {
+				//todo modularizar esto para que las figures tengan que implementar un fill propio
 				Rectangle rectangle = (Rectangle) figure;
 				gc.fillRect(rectangle.getTopLeft().getX(), rectangle.getTopLeft().getY(),
 						Math.abs(rectangle.getTopLeft().getX() - rectangle.getBottomRight().getX()), Math.abs(rectangle.getTopLeft().getY() - rectangle.getBottomRight().getY()));
@@ -220,6 +227,7 @@ public class PaintPane extends BorderPane {
 	}
 
 	boolean figureBelongs(Figure figure, Point eventPoint) {
+		//todo esto es facil. separar codigo en el backend con una funcion
 		boolean found = false;
 		if(figure instanceof Rectangle) {
 			Rectangle rectangle = (Rectangle) figure;
