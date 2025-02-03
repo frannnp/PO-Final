@@ -12,6 +12,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.input.MouseEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -70,113 +71,15 @@ public class PaintPane extends BorderPane {
 		buttonsBox.setPrefWidth(100);
 		gc.setLineWidth(1);
 
-		canvas.setOnMousePressed(event -> {
-			startPoint = new Point(event.getX(), event.getY());
-		});
+		canvas.setOnMousePressed(this::onMousePressed);
 
-		canvas.setOnMouseReleased(event -> {
-			//todo no mas else if
-			Point endPoint = new Point(event.getX(), event.getY());
-			if(startPoint == null) {
-				return ;
-			}
-			if(endPoint.getX() < startPoint.getX() || endPoint.getY() < startPoint.getY()) {
-				return ;
-			}
-			Figure newFigure = null;
-			if(rectangleButton.isSelected()) {
-				newFigure = new Rectangle(startPoint, endPoint);
-			}
-			else if(circleButton.isSelected()) {
-				double circleRadius = Math.abs(endPoint.getX() - startPoint.getX());
-				newFigure = new Circle(startPoint, circleRadius);
-			} else if(squareButton.isSelected()) {
-				double size = Math.abs(endPoint.getX() - startPoint.getX());
-				newFigure = new Square(startPoint, size);
-			} else if(ellipseButton.isSelected()) {
-				Point centerPoint = new Point(Math.abs(endPoint.x + startPoint.x) / 2, (Math.abs((endPoint.y + startPoint.y)) / 2));
-				double sMayorAxis = Math.abs(endPoint.x - startPoint.x);
-				double sMinorAxis = Math.abs(endPoint.y - startPoint.y);
-				newFigure = new Ellipse(centerPoint, sMayorAxis, sMinorAxis);
-			} else {
-				return ;
-			}
-			figureColorMap.put(newFigure, fillColorPicker.getValue());
-			canvasState.addFigure(newFigure);
-			startPoint = null;
-			redrawCanvas();
-		});
+		canvas.setOnMouseReleased(this::onMouseReleased);
 
-		canvas.setOnMouseMoved(event -> {
-			//todo aaaa
-			Point eventPoint = new Point(event.getX(), event.getY());
-			boolean found = false;
-			StringBuilder label = new StringBuilder();
-			for(Figure figure : canvasState.figures()) {
-				if(figureBelongs(figure, eventPoint)) {
-					found = true;
-					label.append(figure.toString());
-				}
-			}
-			if(found) {
-				statusPane.updateStatus(label.toString());
-			} else {
-				statusPane.updateStatus(eventPoint.toString());
-			}
-		});
+		canvas.setOnMouseMoved(this::onMouseMoved);
 
-		canvas.setOnMouseClicked(event -> {
-			if(selectionButton.isSelected()) {
-				Point eventPoint = new Point(event.getX(), event.getY());
-				boolean found = false;
-				StringBuilder label = new StringBuilder("Se seleccionó: ");
-				for (Figure figure : canvasState.figures()) {
-					if(figureBelongs(figure, eventPoint)) {
-						found = true;
-						selectedFigure = figure;
-						label.append(figure.toString());
-					}
-				}
-				if (found) {
-					statusPane.updateStatus(label.toString());
-				} else {
-					selectedFigure = null;
-					statusPane.updateStatus("Ninguna figura encontrada");
-				}
-				redrawCanvas();
-			}
-		});
+		canvas.setOnMouseClicked(this::onMouseClicked);
 
-		canvas.setOnMouseDragged(event -> {
-			//todo if(else if) then fix
-			if(selectionButton.isSelected()) {
-				Point eventPoint = new Point(event.getX(), event.getY());
-				double diffX = (eventPoint.getX() - startPoint.getX()) / 100;
-				double diffY = (eventPoint.getY() - startPoint.getY()) / 100;
-				if(selectedFigure instanceof Rectangle) {
-					Rectangle rectangle = (Rectangle) selectedFigure;
-					rectangle.getTopLeft().x += diffX;
-					rectangle.getBottomRight().x += diffX;
-					rectangle.getTopLeft().y += diffY;
-					rectangle.getBottomRight().y += diffY;
-				} else if(selectedFigure instanceof Circle) {
-					Circle circle = (Circle) selectedFigure;
-					circle.getCenterPoint().x += diffX;
-					circle.getCenterPoint().y += diffY;
-				} else if(selectedFigure instanceof Square) {
-					Square square = (Square) selectedFigure;
-					square.getTopLeft().x += diffX;
-					square.getBottomRight().x += diffX;
-					square.getTopLeft().y += diffY;
-					square.getBottomRight().y += diffY;
-				} else if(selectedFigure instanceof Ellipse) {
-					Ellipse ellipse = (Ellipse) selectedFigure;
-					ellipse.getCenterPoint().x += diffX;
-					ellipse.getCenterPoint().y += diffY;
-				}
-				redrawCanvas();
-			}
-		});
+		canvas.setOnMouseDragged(this::onMouseDragged);
 
 		deleteButton.setOnAction(event -> {
 			//todo elseif elseifelseif
@@ -189,6 +92,77 @@ public class PaintPane extends BorderPane {
 
 		setLeft(buttonsBox);
 		setRight(canvas);
+	}
+
+	private void onMouseDragged(MouseEvent event) {
+		if(selectionButton.isSelected()) {
+			Point eventPoint = new Point(event.getX(), event.getY());
+			double diffX = (eventPoint.getX() - startPoint.getX()) / 100;
+			double diffY = (eventPoint.getY() - startPoint.getY()) / 100;
+			if(selectedFigure instanceof Rectangle) {
+				Rectangle rectangle = (Rectangle) selectedFigure;
+				rectangle.getTopLeft().x += diffX;
+				rectangle.getBottomRight().x += diffX;
+				rectangle.getTopLeft().y += diffY;
+				rectangle.getBottomRight().y += diffY;
+			} else if(selectedFigure instanceof Circle) {
+				Circle circle = (Circle) selectedFigure;
+				circle.getCenterPoint().x += diffX;
+				circle.getCenterPoint().y += diffY;
+			} else if(selectedFigure instanceof Square) {
+				Square square = (Square) selectedFigure;
+				square.getTopLeft().x += diffX;
+				square.getBottomRight().x += diffX;
+				square.getTopLeft().y += diffY;
+				square.getBottomRight().y += diffY;
+			} else if(selectedFigure instanceof Ellipse) {
+				Ellipse ellipse = (Ellipse) selectedFigure;
+				ellipse.getCenterPoint().x += diffX;
+				ellipse.getCenterPoint().y += diffY;
+			}
+			redrawCanvas();
+		}
+	}
+
+	private void onMouseClicked(MouseEvent event) {
+		if(selectionButton.isSelected()) {
+			Point eventPoint = new Point(event.getX(), event.getY());
+			boolean found = false;
+			StringBuilder label = new StringBuilder("Se seleccionó: ");
+			for (Figure figure : canvasState.figures()) {
+				if(figureBelongs(figure, eventPoint)) {
+					found = true;
+					selectedFigure = figure;
+					label.append(figure.toString());
+				}
+			}
+			if (found) {
+				statusPane.updateStatus(label.toString());
+			} else {
+				selectedFigure = null;
+				statusPane.updateStatus("Ninguna figura encontrada");
+			}
+			redrawCanvas();
+		}
+	}
+
+	private void onMouseMoved(MouseEvent event) {
+
+		//todo aaaa
+		Point eventPoint = new Point(event.getX(), event.getY());
+		boolean found = false;
+		StringBuilder label = new StringBuilder();
+		for(Figure figure : canvasState.figures()) {
+			if(figureBelongs(figure, eventPoint)) {
+				found = true;
+				label.append(figure.toString());
+			}
+		}
+		if(found) {
+			statusPane.updateStatus(label.toString());
+		} else {
+			statusPane.updateStatus(eventPoint.toString());
+		}
 	}
 
 	void redrawCanvas() {
@@ -250,4 +224,39 @@ public class PaintPane extends BorderPane {
 		return found;
 	}
 
+	private void onMouseReleased(MouseEvent event) {
+		Point endPoint = new Point(event.getX(), event.getY());
+		if(startPoint == null) {
+			return ;
+		}
+		if(endPoint.getX() < startPoint.getX() || endPoint.getY() < startPoint.getY()) {
+			return ;
+		}
+		Figure newFigure = null;
+		if(rectangleButton.isSelected()) {
+			newFigure = new Rectangle(startPoint, endPoint);
+		}
+		else if(circleButton.isSelected()) {
+			double circleRadius = Math.abs(endPoint.getX() - startPoint.getX());
+			newFigure = new Circle(startPoint, circleRadius);
+		} else if(squareButton.isSelected()) {
+			double size = Math.abs(endPoint.getX() - startPoint.getX());
+			newFigure = new Square(startPoint, size);
+		} else if(ellipseButton.isSelected()) {
+			Point centerPoint = new Point(Math.abs(endPoint.x + startPoint.x) / 2, (Math.abs((endPoint.y + startPoint.y)) / 2));
+			double sMayorAxis = Math.abs(endPoint.x - startPoint.x);
+			double sMinorAxis = Math.abs(endPoint.y - startPoint.y);
+			newFigure = new Ellipse(centerPoint, sMayorAxis, sMinorAxis);
+		} else {
+			return ;
+		}
+		figureColorMap.put(newFigure, fillColorPicker.getValue());
+		canvasState.addFigure(newFigure);
+		startPoint = null;
+		redrawCanvas();
+	}
+
+	private void onMousePressed(MouseEvent event) {
+		startPoint = new Point(event.getX(), event.getY());
+	}
 }

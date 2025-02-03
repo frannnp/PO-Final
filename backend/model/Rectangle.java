@@ -1,6 +1,6 @@
 package backend.model;
 
-public class Rectangle extends AbstractFigure {
+public class Rectangle extends Figure {
 
     private final Point topLeft, bottomRight;
 
