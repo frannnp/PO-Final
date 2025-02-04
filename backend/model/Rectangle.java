@@ -17,6 +17,17 @@ public class Rectangle extends Figure {
         return bottomRight;
     }
 
+    @Override
+    public void move(double dx, double dy) {
+        topLeft.move(dx, dy);
+        bottomRight.move(dx, dy);
+    }
+    @Override
+    public boolean belongs(Point p) {
+        return p.getX() > topLeft.getX() && p.getX() < bottomRight.getX() &&
+                p.getY() > topLeft.getY() && p.getY() < bottomRight.getY();
+    }
+
     public String getName(){
         return "Rectángulo";
     }

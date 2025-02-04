@@ -1,6 +1,9 @@
 package backend.model;
 
-        public abstract class Figure {
+import backend.Movable;
+
+public abstract class Figure implements Movable {
+            public abstract boolean belongs(Point p);
             @Override
             public String toString() {
                 return String.format("%s [ %s ]", getName(), getFormat());
