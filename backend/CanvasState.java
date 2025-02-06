@@ -25,7 +25,16 @@ public class CanvasState implements Iterable<Figure> {
     }
 
     public void sendToTop(Figure figure) {
-
+            if(list.contains(figure)) {
+                list.remove(figure);
+                list.addFirst(figure);
+            }
+    }
+    public void sendToBottom(Figure figure) {
+        if(list.contains(figure)) {
+            list.remove(figure);
+            list.addLast(figure);
+        }
     }
 
     @Override

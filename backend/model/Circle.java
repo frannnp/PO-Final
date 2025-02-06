@@ -16,8 +16,8 @@ public class Circle extends Ellipse {
     ¨*/
     @Override
     public boolean belongs(Point p){
-        return Math.sqrt(Math.pow(this.getCenterPoint().getX() - p.getX(), 2) +
-                Math.pow(this.getCenterPoint().getY() - p.getY(), 2)) < this.getRadius();
+        return Math.sqrt(Math.pow(getCenterPoint().getX() - p.getX(), 2) +
+                Math.pow(getCenterPoint().getY() - p.getY(), 2)) < getRadius();
     }
 
 
