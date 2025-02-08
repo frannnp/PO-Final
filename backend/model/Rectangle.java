@@ -1,7 +1,5 @@
 package backend.model;
 
-import javafx.scene.canvas.GraphicsContext;
-
 public class Rectangle extends Figure {
 
     private final Point topLeft, bottomRight;
@@ -18,13 +16,9 @@ public class Rectangle extends Figure {
     public Point getBottomRight() {
         return bottomRight;
     }
-    public double width(){ return Math.abs(topLeft.getX() - bottomRight.getX());}
-    public double height(){ return Math.abs(topLeft.getY() - bottomRight.getY());}
-    @Override
-    public void draw(GraphicsContext g) {
-        g.fillRect(topLeft.getX(), topLeft.getY(), width(),height());
-        g.strokeRect(topLeft.getX(), topLeft.getY(), width(),height());
-    }
+    public double width(){ return topLeft.horizontalDistanceTo(bottomRight);}
+    public double height(){ return topLeft.verticalDistanceTo(bottomRight);}
+
 
     @Override
     public void move(double dx, double dy) {
@@ -41,7 +35,7 @@ public class Rectangle extends Figure {
         return "Rectángulo";
     }
 
-    public String getFormat(){
+    public String getParameters(){
         return String.format("%s , %s", topLeft, bottomRight);
     }
 }

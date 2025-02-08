@@ -26,12 +26,6 @@ public class Ellipse extends Figure {
         return sMinorAxis;
     }
     @Override
-    public void draw(GraphicsContext g){
-        g.fillOval(centerPoint.getX() - sMayorAxis/2, centerPoint.getY() - sMinorAxis/2, sMayorAxis, sMinorAxis);
-        g.strokeOval(centerPoint.getX() - sMayorAxis/2, centerPoint.getY() - sMinorAxis/2, sMayorAxis, sMinorAxis);
-    }
-
-    @Override
     public void move(double deltaX, double deltaY) {
         centerPoint.move(deltaX, deltaY);
     }
@@ -42,7 +36,7 @@ public class Ellipse extends Figure {
                 (Math.pow(p.getY() - getCenterPoint().getY(), 2) / Math.pow(getsMinorAxis(), 2))) <= 0.30;
     }
 
-    public String getFormat() {
+    public String getParameters() {
         return String.format("Centro: %s, DMayor: %.2f, DMenor: %.2f", centerPoint, sMayorAxis, sMinorAxis);
     }
 

@@ -29,4 +29,14 @@ public class Point implements Movable {
         return String.format("{%.2f , %.2f}", x, y);
     }
 
+    public double distanceTo(Point p) {
+        return Math.sqrt(Math.pow(x - p.x, 2) + Math.pow(y - p.y, 2));
+    }
+    public double horizontalDistanceTo(Point p) {
+        return Math.abs(x - p.x);
+    }
+    public double verticalDistanceTo(Point p) {
+        return Math.abs(y - p.y);
+    }
+
 }
