@@ -3,7 +3,7 @@ package frontend;
 import backend.CanvasState;
 import backend.actions.AddFigure;
 import backend.model.*;
-import frontend.drawers.FigureDrawer;
+import frontend.drawers.*;
 import frontend.factory.*;
 import javafx.geometry.Insets;
 import javafx.scene.Cursor;
@@ -80,6 +80,7 @@ public class PaintPane extends BorderPane {
 	Map<ToggleButton, FigureFactory> figureFactoryMap = new HashMap<>();
 	Map<Figure, FigureFormat> figureFormatMap = new HashMap<>();
 	Map<Figure, FigureDrawer> figureDrawerMap = new HashMap<>();
+	Map<ToggleButton, FigureDrawer> buttonDrawerMap = new HashMap<>();
 
 	private ToggleButton getSelectedFigureButton() {
 		for(ToggleButton tool : toolsArr){
@@ -108,6 +109,10 @@ public class PaintPane extends BorderPane {
 		figureFactoryMap.put(circleButton,new CircleFactory(this,canvasState));
 		figureFactoryMap.put(squareButton,new SquareFactory(this,canvasState));
 
+		buttonDrawerMap.put(rectangleButton, new RectangleDrawer());
+		buttonDrawerMap.put(ellipseButton, new EllipseDrawer());
+		buttonDrawerMap.put(circleButton, new CircleDrawer());
+		buttonDrawerMap.put(squareButton, new SquareDrawer());
 
 		VBox buttonsBox = new VBox(10);
 		buttonsBox.getChildren().addAll(toolsArr);
@@ -210,7 +215,7 @@ public class PaintPane extends BorderPane {
 				gc.setStroke(figureFormatMap.get(figure).getLineColor());
 			}
 			gc.setFill(figureColorMap.get(figure));
-			figureDrawerMap.get(figure).draw(gc,figureFormatMap.get(figure));
+			figureDrawerMap.get(figure).draw(gc,figureFormatMap.get(figure),figure);
 		}
 	}
 
@@ -232,6 +237,7 @@ public class PaintPane extends BorderPane {
 
 		figureColorMap.put(newFigure, fillColorPicker.getValue());
 		figureFormatMap.put(newFigure, new FigureFormat(fillColorPicker.getValue(), gradientColorPicker.getValue(),lineColorPicker.getValue(),borderChoice.getValue(),ShadowStyle.NONE));
+		figureDrawerMap.put(newFigure, buttonDrawerMap.get(getSelectedFigureButton()));
 		canvasState.addFigure(newFigure);
 		startPoint = null;
 		redrawCanvas();

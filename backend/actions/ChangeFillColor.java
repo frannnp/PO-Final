@@ -1,26 +1,27 @@
 package backend.actions;
 
 import backend.model.Figure;
+import frontend.FigureFormat;
 import javafx.scene.paint.Color;
 
 public class ChangeFillColor implements Action{
-    private final Figure figure;
+    private final FigureFormat format;
     private final Color oldColor;
     private final Color newColor;
-    public ChangeFillColor(Figure figure, Color oldColor, Color newColor) {
-        this.figure = figure;
+    public ChangeFillColor(FigureFormat format, Color oldColor, Color newColor) {
+        this.format = format;
         this.oldColor = oldColor;
         this.newColor = newColor;
     }
 
     @Override
     public void execute() {
-    //    figure.setFillColor(newColor);
+        format.setFillColor(newColor);
     }
 
     @Override
     public void undo() {
-    //    figure.setFillColor(oldColor);
+        format.setFillColor(oldColor);
     }
 }
 

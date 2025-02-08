@@ -1,24 +1,25 @@
 package backend.actions;
 
-import backend.model.Figure;
+import frontend.FigureFormat;
+import frontend.ShadowStyle;
 
 public class ChangeShadowType implements Action {
-    private final Figure figure;
-    private final String oldShadowType;
-    private final String newShadowType;
+    private final FigureFormat format;
+    private final ShadowStyle oldShadowStyle;
+    private final ShadowStyle newShadowType;
 
-    public ChangeShadowType(Figure figure, String oldShadowType, String newShadowType) {
-        this.figure = figure;
-        this.oldShadowType = oldShadowType;
+    public ChangeShadowType(FigureFormat format, ShadowStyle oldShadowType, ShadowStyle newShadowType) {
+        this.format = format;
+        this.oldShadowStyle = oldShadowType;
         this.newShadowType = newShadowType;
     }
 
     @Override
     public void execute() {
-        //figure.setShadowType(newShadowType);
+        format.setShadowStyle(newShadowType);
     }
 
     @Override
     public void undo() {
-        //figure.setShadowType(oldShadowType);
+        format.setShadowStyle(oldShadowStyle);
     }}

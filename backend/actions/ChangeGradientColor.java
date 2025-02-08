@@ -1,25 +1,26 @@
 package backend.actions;
 
 import backend.model.Figure;
+import frontend.FigureFormat;
 import javafx.scene.paint.Color;
 public class ChangeGradientColor implements Action{
-        private final Figure figure;
+        private final FigureFormat format;
         private final Color oldColor;
         private final Color newColor;
 
-        public ChangeGradientColor(Figure figure, Color oldColor, Color newColor) {
-            this.figure = figure;
+        public ChangeGradientColor(FigureFormat format, Color oldColor, Color newColor) {
+            this.format = format;
             this.oldColor = oldColor;
             this.newColor = newColor;
         }
 
         @Override
         public void execute() {
-       //     figure.setSecondaryFillColor(newColor);
+            format.setGradientColor(newColor);
         }
 
         @Override
         public void undo() {
-        //    figure.setSecondaryFillColor(oldColor);
+            format.setGradientColor(oldColor);
         }
 }

@@ -1,25 +1,26 @@
 package backend.actions;
 import backend.model.Figure;
+import frontend.FigureFormat;
 import javafx.scene.paint.Color;
 
 public class ChangeBorderColor implements Action {
-    private final Figure figure;
+    private final FigureFormat format;
     private final Color oldColor;
     private final Color newColor;
 
-    public ChangeBorderColor(Figure figure, Color oldColor, Color newColor) {
-        this.figure = figure;
+    public ChangeBorderColor(FigureFormat format, Color oldColor, Color newColor) {
+        this.format = format;
         this.oldColor = oldColor;
         this.newColor = newColor;
     }
 
     @Override
     public void execute() {
-    //    figure.setBorderColor(newColor);
+       format.setLineColor(newColor);
     }
 
     @Override
     public void undo() {
-    //    figure.setBorderColor(oldColor);
+        format.setLineColor(oldColor);
     }
 }

@@ -1,24 +1,26 @@
 package backend.actions;
 import backend.model.Figure;
+import frontend.BorderStyle;
+import frontend.FigureFormat;
 
 public class ChangeBorderType implements Action {
-    private final Figure figure;
-    private final String oldBorderType;
-    private final String newBorderType;
+    private final FigureFormat format;
+    private final BorderStyle oldBorderType;
+    private final BorderStyle newBorderType;
 
-    public ChangeBorderType(Figure figure, String oldBorderType, String newBorderType) {
-        this.figure = figure;
+    public ChangeBorderType(FigureFormat format, BorderStyle oldBorderType, BorderStyle newBorderType) {
+        this.format = format;
         this.oldBorderType = oldBorderType;
         this.newBorderType = newBorderType;
     }
 
     @Override
     public void execute() {
-    //    figure.setBorderType(newBorderType);
+        format.setBorderStyle(newBorderType);
     }
 
     @Override
     public void undo() {
-    //    figure.setBorderType(oldBorderType);
+        format.setBorderStyle(oldBorderType);
     }
 }
