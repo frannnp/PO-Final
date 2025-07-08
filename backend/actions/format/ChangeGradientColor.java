@@ -1,8 +1,9 @@
-package backend.actions;
+package backend.actions.format;
 
+import backend.actions.Action;
 import frontend.FigureFormat;
 import javafx.scene.paint.Color;
-public class ChangeGradientColor implements Action{
+public class ChangeGradientColor implements Action {
         private final FigureFormat format;
         private final Color oldColor;
         private final Color newColor;

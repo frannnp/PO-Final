@@ -1,7 +1,7 @@
 package frontend;
 
 import backend.CanvasState;
-import backend.actions.AddFigure;
+import backend.actions.figure.AddFigure;
 import backend.model.figures.Figure;
 import backend.model.figures.Point;
 import frontend.drawers.*;
@@ -66,12 +66,7 @@ public class PaintPane extends BorderPane {
 	ColorPicker lineColorPicker = new ColorPicker(defaultLineColor);
 
 	// Dibujar una figura
-	Point startPoint;
 
-	// Seleccionar una figura
-	Figure selectedFigure;
-
-	ToggleButton selectedFigureButton;
 
 	// StatusBar
 	StatusPane statusPane;
@@ -93,9 +88,27 @@ public class PaintPane extends BorderPane {
 	}
 	ToggleButton[] toolsArr = {selectionButton,rectangleButton, circleButton, squareButton, ellipseButton, deleteButton, undoButton, redoButton};
 
+    ToggleButton selectedFigureButton;
+
+
+
+    private enum Mode { SELECT, DRAW }
+	private Mode mode = Mode.DRAW;
+
+
+    private Point drawStart;
+    private Point drawEnd;
+
+
+    private Figure selectedFigure;
+	private Figure previewFigure;
+
+
+
 	public PaintPane(CanvasState canvasState, StatusPane statusPane) {
 		this.canvasState = canvasState;
 		this.statusPane = statusPane;
+
 
 		ToggleGroup tools = new ToggleGroup();
 		for (ToggleButton tool : toolsArr) {
@@ -175,10 +188,10 @@ public class PaintPane extends BorderPane {
 
 	private void onMouseDragged(MouseEvent event) {
 		if(selectionButton.isSelected() && selectedFigure != null) {
-			double diffX = event.getX() - startPoint.getX() ;
-			double diffY = event.getY() - startPoint.getY() ;
+			double diffX = event.getX() - drawStart.getX() ;
+			double diffY = event.getY() - drawStart.getY() ;
 			redrawCanvas();
-			startPoint.move(diffX, diffY);
+			drawStart.move(diffX, diffY);
 
 		}
 	}
@@ -222,10 +235,10 @@ public class PaintPane extends BorderPane {
 
 		private void onMouseReleased(MouseEvent event) {
 		Point endPoint = new Point(event.getX(), event.getY());
-		if(startPoint == null) {
+		if(drawStart == null) {
 			return ;
 		}
-		if(endPoint.getX() < startPoint.getX() || endPoint.getY() < startPoint.getY()) {
+		if(endPoint.getX() < drawStart.getX() || endPoint.getY() < drawStart.getY()) {
 			return ;
 		}
 		ToggleButton button = getSelectedFigureButton();
@@ -233,18 +246,18 @@ public class PaintPane extends BorderPane {
 			return;
 
 		//FigureFormat format = new FigureFormat(Color.YELLOW,Color.ORANGE)
-		Figure newFigure = figureFactoryMap.get(button).generateFigure(startPoint,endPoint);
+		Figure newFigure = figureFactoryMap.get(button).generateFigure(drawStart,endPoint);
 		canvasState.executeAction(new AddFigure(canvasState,newFigure));
 
 		figureColorMap.put(newFigure, fillColorPicker.getValue());
 		figureFormatMap.put(newFigure, new FigureFormat(fillColorPicker.getValue(), gradientColorPicker.getValue(),lineColorPicker.getValue(),borderChoice.getValue(),ShadowStyle.NONE));
 		figureDrawerMap.put(newFigure, buttonDrawerMap.get(getSelectedFigureButton()));
 		canvasState.addFigure(newFigure);
-		startPoint = null;
+		drawStart = null;
 		redrawCanvas();
 	}
 
 	private void onMousePressed(MouseEvent event) {
-		startPoint = new Point(event.getX(), event.getY());
+		drawStart = new Point(event.getX(), event.getY());
 	}
 }

@@ -1,23 +1,25 @@
-package backend.actions;
+package backend.actions.layer;
+
 import backend.CanvasState;
+import backend.actions.Action;
 import backend.model.figures.Figure;
 
-public class SendToBack implements Action {
+public class BringToFront implements Action {
     private final CanvasState canvas;
     private final Figure figure;
 
-    public SendToBack(CanvasState canvasState, Figure figure) {
+    public BringToFront(CanvasState canvasState, Figure figure) {
         this.canvas = canvasState;
         this.figure = figure;
     }
 
     @Override
     public void execute() {
-        canvas.sendToBottom(figure);
+        canvas.sendToTop(figure);
     }
 
     @Override
     public void undo() {
-        canvas.sendToTop(figure);
+        canvas.sendToBottom(figure);
     }
 }

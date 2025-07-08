@@ -1,15 +1,17 @@
-package frontend;
+package backend.format;
 
-import javafx.scene.paint.Color;
+import frontend.BorderStyle;
+import frontend.ShadowStyle;
 
-public class FigureFormat {
-    private Color fillColor;
-    private Color gradientColor;
-    private Color lineColor;
+
+public class FigureFormatData {
+    private ColorData fillColor;
+    private ColorData gradientColor;
+    private ColorData lineColor;
     private BorderStyle borderStyle;
     private ShadowStyle shadowStyle;
     private boolean useGradient;
-    public FigureFormat(Color fillColor, Color gradientColor, Color lineColor, BorderStyle border, ShadowStyle shadow) {
+    public FigureFormatData(ColorData fillColor, ColorData gradientColor, ColorData lineColor, BorderStyle border, ShadowStyle shadow) {
         this.fillColor = fillColor;
         this.gradientColor = gradientColor;
         this.lineColor = lineColor;
@@ -18,30 +20,34 @@ public class FigureFormat {
         this.useGradient = gradientColor != null;
     }
 
-    public Color getFillColor() {
+    public ColorData getFillColor() {
         return fillColor;
     }
-    public void setFillColor(Color fillColor) {
+    public void setFillColor(ColorData fillColor) {
         this.fillColor = fillColor;
     }
-    public Color getGradientColor() {
+
+    public ColorData getGradientColor() {
         return gradientColor;
     }
-    public void setGradientColor(Color gradientColor) {
+    public void setGradientColor(ColorData gradientColor) {
         this.gradientColor = gradientColor;
     }
-    public Color getLineColor() {
+
+    public ColorData getLineColor() {
         return lineColor;
     }
-    public void setLineColor(Color lineColor) {
+    public void setLineColor(ColorData lineColor) {
         this.lineColor = lineColor;
     }
+
     public ShadowStyle getShadowStyle() {
         return shadowStyle;
     }
     public void setShadowStyle(ShadowStyle shadowStyle) {
         this.shadowStyle = shadowStyle;
     }
+
     public BorderStyle getBorderStyle() {
         return borderStyle;
     }
@@ -55,9 +61,4 @@ public class FigureFormat {
         this.useGradient = useGradient;
     }
 
-    public FigureFormat copy() {
-        FigureFormat copy = new FigureFormat(fillColor, gradientColor, lineColor, borderStyle, shadowStyle);
-        copy.setUseGradient(useGradient);
-        return copy;
-    }
 }

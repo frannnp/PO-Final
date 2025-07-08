@@ -1,9 +1,10 @@
-package backend.actions;
+package backend.actions.figure;
 
 import backend.CanvasState;
+import backend.actions.Action;
 import backend.model.figures.Figure;
 
-public class AddFigure implements Action{
+public class AddFigure implements Action {
     private final CanvasState canvas;
     private final Figure figure;
 

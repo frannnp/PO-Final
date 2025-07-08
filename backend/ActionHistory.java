@@ -11,11 +11,11 @@ public class ActionHistory {
     public void execute(Action action) {
         action.execute();
         undoStack.push(action);
-        redoStack.push(action);
+        redoStack.clear();
     }
 
     public void undo() {
-        if(canRedo()) {
+        if(canUndo()) {
             Action action = undoStack.pop();
             action.undo();
             redoStack.push(action);

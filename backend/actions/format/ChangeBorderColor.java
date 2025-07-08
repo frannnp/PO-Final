@@ -1,4 +1,5 @@
-package backend.actions;
+package backend.actions.format;
+import backend.actions.Action;
 import frontend.FigureFormat;
 import javafx.scene.paint.Color;
 

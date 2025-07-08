@@ -2,13 +2,14 @@ package backend.model.figures;
 
 import backend.Movable;
 import backend.effects.EffectType;
+import backend.format.FigureFormatData;
 import frontend.MainFrame;
 
 import java.util.EnumSet;
 import java.util.Set;
 
 public abstract class Figure implements Movable {
-            private MainFrame.FigureFormat format;
+            private FigureFormatData format;
             public abstract boolean belongs(Point p);
             @Override
             public String toString() {
@@ -17,7 +18,7 @@ public abstract class Figure implements Movable {
             public abstract String getParameters();
             public abstract String getName();
 
-            public MainFrame.FigureFormat getFormat(){
+            public FigureFormatData getFormat(){
                 return format;
             }
 
