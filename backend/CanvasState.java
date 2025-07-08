@@ -1,6 +1,15 @@
 package backend;
 
 import backend.actions.Action;
+import backend.actions.figure.AddFigure;
+import backend.actions.figure.DeleteFigure;
+import backend.actions.effect.AddEffect;
+import backend.actions.effect.RemoveEffect;
+import backend.actions.effect.ToggleEffect;
+import backend.actions.format.ChangeBorderColor;
+
+import backend.effects.EffectType;
+
 import backend.model.figures.Figure;
 import backend.model.figures.Point;
 
@@ -15,11 +24,11 @@ public class CanvasState implements Iterable<Figure> {
     private final ActionHistory actionHistory = new ActionHistory();
 
     public void addFigure(Figure figure) {
-        figures.add(figure);
+        actionHistory.execute(new AddFigure(this, figure));
     }
 
     public void deleteFigure(Figure figure) {
-        figures.remove(figure);
+        actionHistory.execute(new DeleteFigure(this, figure));
     }
 
     public Figure findTopFigureInPoint(Point p){

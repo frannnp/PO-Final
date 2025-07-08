@@ -23,6 +23,9 @@ public class Point implements Movable {
         x += dx;
         y += dy;
     }
+    public Point copy() {
+        return new Point(x, y);
+    }
 
     @Override
     public String toString() {

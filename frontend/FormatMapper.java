@@ -6,10 +6,8 @@ import javafx.scene.paint.Color;
 public class FormatMapper {
     public static FigureFormat toFxFormat(FigureFormatData data) {
         Color fill   = toFxColor(data.getFillColor());
-        Color gradient = toFxColor(data.getGradientColor());
         Color line    = toFxColor(data.getLineColor());
-        return new FigureFormat(fill, gradient, line,
-                BorderStyle.NORMAL, ShadowStyle.NONE);
+        return new FigureFormat(fill,line);
     }
     private static Color toFxColor(ColorData c) {
         if (c == null) return null;

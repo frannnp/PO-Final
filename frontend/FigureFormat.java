@@ -7,14 +7,12 @@ public class FigureFormat {
     private Color gradientColor;
     private Color lineColor;
     private BorderStyle borderStyle;
-    private ShadowStyle shadowStyle;
     private boolean useGradient;
-    public FigureFormat(Color fillColor, Color gradientColor, Color lineColor, BorderStyle border, ShadowStyle shadow) {
+    public FigureFormat(Color fillColor, Color gradientColor, Color lineColor, BorderStyle border) {
         this.fillColor = fillColor;
         this.gradientColor = gradientColor;
         this.lineColor = lineColor;
         this.borderStyle = border;
-        this.shadowStyle = shadow;
         this.useGradient = gradientColor != null;
     }
 
@@ -36,12 +34,8 @@ public class FigureFormat {
     public void setLineColor(Color lineColor) {
         this.lineColor = lineColor;
     }
-    public ShadowStyle getShadowStyle() {
-        return shadowStyle;
-    }
-    public void setShadowStyle(ShadowStyle shadowStyle) {
-        this.shadowStyle = shadowStyle;
-    }
+
+
     public BorderStyle getBorderStyle() {
         return borderStyle;
     }
@@ -56,7 +50,7 @@ public class FigureFormat {
     }
 
     public FigureFormat copy() {
-        FigureFormat copy = new FigureFormat(fillColor, gradientColor, lineColor, borderStyle, shadowStyle);
+        FigureFormat copy = new FigureFormat(fillColor, gradientColor, lineColor, borderStyle);
         copy.setUseGradient(useGradient);
         return copy;
     }

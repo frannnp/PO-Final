@@ -1,14 +1,15 @@
 package backend.actions.format;
 import backend.actions.Action;
+import backend.format.FigureFormatData;
 import frontend.BorderStyle;
 import frontend.FigureFormat;
 
-public class ChangeBorderType implements Action {
+public class ChangeBorderStyle implements Action {
     private final FigureFormat format;
     private final BorderStyle oldBorderType;
     private final BorderStyle newBorderType;
 
-    public ChangeBorderType(FigureFormat format, BorderStyle oldBorderType, BorderStyle newBorderType) {
+    public ChangeBorderStyle(FigureFormatData format, BorderStyle oldBorderType, BorderStyle newBorderType) {
         this.format = format;
         this.oldBorderType = oldBorderType;
         this.newBorderType = newBorderType;

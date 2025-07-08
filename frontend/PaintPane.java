@@ -49,8 +49,7 @@ public class PaintPane extends BorderPane {
 	ToggleButton sendToBackButton = new ToggleButton("Enviar al fondo");
 
 	ChoiceBox<BorderStyle> borderChoice = new ChoiceBox<>();
-	//todo
-	//Choicebox<ShadowStyle> shadowChoice = new ChoiceBox<>();
+
 
 	ChoiceBox<String> layerChoiceBox = new ChoiceBox<>();
 	Button addLayerButton = new Button("Agregar Capa");
@@ -92,7 +91,59 @@ public class PaintPane extends BorderPane {
 
 
 
-    private enum Mode { SELECT, DRAW }
+    private enum Mode {
+        SELECT{
+            @Override
+            void onPressed(PaintPane pane, MouseEvent e){
+                Point p = new Point(e.getX(), e.getY());
+                Figure figure = pane.canvasState.findTopFigureInPoint(p);
+                if(figure == null){
+                    pane.statusPane.updateStatus("Ninguna figura encontrada");
+                }
+                else {
+                    pane.statusPane.updateStatus(String.format("Se seleccionó: %s",figure));
+                }
+                pane.selectedFigure = figure;
+                pane.redrawCanvas();
+
+            }
+            @Override
+            void onDragged(PaintPane pane, MouseEvent e){
+                //no me tengo que fijar si estoy agarrando una figura, porque onPressed ya se fija
+                double diffX = e.getX() - pane.drawStart.getX() ;
+                double diffY = e.getY() - pane.drawStart.getY() ;
+                pane.redrawCanvas();
+                pane.drawStart.move(diffX, diffY);
+            }
+            @Override
+            void onReleased(PaintPane pane, MouseEvent e) {} //vacio
+        },
+        DRAW{
+        @Override
+            void onPressed(PaintPane pane, MouseEvent e){
+            pane.drawStart = new Point(e.getX(), e.getY());
+        }
+            @Override
+            void onDragged(PaintPane pane, MouseEvent e){
+                Point p = new Point(e.getX(), e.getY());
+           //     pane.previewFigure = pane.generateFigure(pane.drawStart, p);
+            }
+            @Override
+            void onReleased(PaintPane pane, MouseEvent e) {
+                if (pane.previewFigure != null) {
+                    pane.canvasState.executeAction(
+                            new AddFigure(pane.canvasState, pane.previewFigure)
+                    );
+                    pane.registerFigureMaps(pane.previewFigure);
+                    pane.previewFigure = null;
+                }
+            }
+        };
+
+        abstract void onPressed(PaintPane pane, MouseEvent e);
+        abstract void onDragged(PaintPane pane, MouseEvent e);
+        abstract void onReleased(PaintPane pane, MouseEvent e);
+    }
 	private Mode mode = Mode.DRAW;
 
 
@@ -138,8 +189,6 @@ public class PaintPane extends BorderPane {
 		buttonsBox.getChildren().add(sendToBackButton);
 
 		buttonsBox.getChildren().add(borderChoice);
-		//todo
-		//buttonsBox.getChildren().add(shadowChoice);
 
 		buttonsBox.getChildren().add(layerChoiceBox);
 		buttonsBox.getChildren().add(addLayerButton);
@@ -188,35 +237,26 @@ public class PaintPane extends BorderPane {
 
 	private void onMouseDragged(MouseEvent event) {
 		if(selectionButton.isSelected() && selectedFigure != null) {
-			double diffX = event.getX() - drawStart.getX() ;
-			double diffY = event.getY() - drawStart.getY() ;
-			redrawCanvas();
-			drawStart.move(diffX, diffY);
+
+
+
 
 		}
 	}
 
 	private void onMouseClicked(MouseEvent event) {
 		if(selectionButton.isSelected()) {
-			Figure figure = canvasState.findTopFigureInPoint(new Point(event.getX(), event.getY()));
-			if(figure == null){
-				statusPane.updateStatus("Ninguna figura encontrada");
-			}
-			else {
-				statusPane.updateStatus(String.format("Se seleccionó: %s",figure));
-			}
-			selectedFigure = figure;
-			redrawCanvas();
+
 		}
 	}
 
-	private void onMouseMoved(MouseEvent event) {
-		Point eventPoint = new Point(event.getX(), event.getY());
-		Figure figure = canvasState.findTopFigureInPoint(new Point(event.getX(), event.getY()));
+	private void onMouseMoved(MouseEvent e) {
+		Point p = new Point(e.getX(), e.getY());
+		Figure figure = canvasState.findTopFigureInPoint(new Point(e.getX(), e.getY()));
 		if(figure != null){
 			statusPane.updateStatus(figure.toString());
 		} else {
-			statusPane.updateStatus(eventPoint.toString());
+			statusPane.updateStatus(p.toString());
 		}
 	}
 
@@ -250,7 +290,7 @@ public class PaintPane extends BorderPane {
 		canvasState.executeAction(new AddFigure(canvasState,newFigure));
 
 		figureColorMap.put(newFigure, fillColorPicker.getValue());
-		figureFormatMap.put(newFigure, new FigureFormat(fillColorPicker.getValue(), gradientColorPicker.getValue(),lineColorPicker.getValue(),borderChoice.getValue(),ShadowStyle.NONE));
+		figureFormatMap.put(newFigure, new FigureFormat(fillColorPicker.getValue(), gradientColorPicker.getValue(),lineColorPicker.getValue(),borderChoice.getValue()));
 		figureDrawerMap.put(newFigure, buttonDrawerMap.get(getSelectedFigureButton()));
 		canvasState.addFigure(newFigure);
 		drawStart = null;
