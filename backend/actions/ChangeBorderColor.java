@@ -1,5 +1,4 @@
 package backend.actions;
-import backend.model.Figure;
 import frontend.FigureFormat;
 import javafx.scene.paint.Color;
 

@@ -2,7 +2,8 @@ package frontend;
 
 import backend.CanvasState;
 import backend.actions.AddFigure;
-import backend.model.*;
+import backend.model.figures.Figure;
+import backend.model.figures.Point;
 import frontend.drawers.*;
 import frontend.factory.*;
 import javafx.geometry.Insets;

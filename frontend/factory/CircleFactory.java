@@ -1,9 +1,9 @@
 package frontend.factory;
 
 import backend.CanvasState;
-import backend.model.Circle;
-import backend.model.Figure;
-import backend.model.Point;
+import backend.model.figures.Circle;
+import backend.model.figures.Figure;
+import backend.model.figures.Point;
 import frontend.PaintPane;
 
 public class CircleFactory extends EllipseFactory{

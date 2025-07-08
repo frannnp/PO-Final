@@ -1,7 +1,7 @@
 package backend.actions;
 
 import backend.CanvasState;
-import backend.model.Figure;
+import backend.model.figures.Figure;
 
 public class DeleteFigure extends AddFigure{
 

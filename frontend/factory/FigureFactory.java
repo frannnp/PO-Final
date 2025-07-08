@@ -1,8 +1,8 @@
 package frontend.factory;
 
 import backend.CanvasState;
-import backend.model.Figure;
-import backend.model.Point;
+import backend.model.figures.Figure;
+import backend.model.figures.Point;
 import frontend.PaintPane;
 
 public abstract class FigureFactory {

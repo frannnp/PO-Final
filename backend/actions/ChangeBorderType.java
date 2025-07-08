@@ -1,5 +1,4 @@
 package backend.actions;
-import backend.model.Figure;
 import frontend.BorderStyle;
 import frontend.FigureFormat;
 

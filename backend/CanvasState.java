@@ -1,8 +1,8 @@
 package backend;
 
 import backend.actions.Action;
-import backend.model.Figure;
-import backend.model.Point;
+import backend.model.figures.Figure;
+import backend.model.figures.Point;
 
 
 import java.util.Iterator;

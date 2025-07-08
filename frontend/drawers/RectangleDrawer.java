@@ -1,7 +1,7 @@
 package frontend.drawers;
 
-import backend.model.Figure;
-import backend.model.Rectangle;
+import backend.model.figures.Figure;
+import backend.model.figures.Rectangle;
 import frontend.FigureFormat;
 import javafx.scene.canvas.GraphicsContext;
 

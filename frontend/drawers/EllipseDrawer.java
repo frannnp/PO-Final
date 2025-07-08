@@ -1,7 +1,7 @@
 package frontend.drawers;
 
-import backend.model.Ellipse;
-import backend.model.Figure;
+import backend.model.figures.Ellipse;
+import backend.model.figures.Figure;
 import frontend.FigureFormat;
 import javafx.scene.canvas.GraphicsContext;
 

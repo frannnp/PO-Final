@@ -1,9 +1,9 @@
 package frontend.factory;
 
 import backend.CanvasState;
-import backend.model.Figure;
-import backend.model.Point;
-import backend.model.Rectangle;
+import backend.model.figures.Figure;
+import backend.model.figures.Point;
+import backend.model.figures.Rectangle;
 import frontend.PaintPane;
 
 public class RectangleFactory extends FigureFactory{

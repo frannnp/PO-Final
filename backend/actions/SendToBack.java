@@ -1,6 +1,6 @@
 package backend.actions;
 import backend.CanvasState;
-import backend.model.Figure;
+import backend.model.figures.Figure;
 
 public class SendToBack implements Action {
     private final CanvasState canvas;

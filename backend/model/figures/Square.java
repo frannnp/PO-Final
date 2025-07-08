@@ -1,4 +1,4 @@
-package backend.model;
+package backend.model.figures;
 
 public class Square extends Rectangle {
 
