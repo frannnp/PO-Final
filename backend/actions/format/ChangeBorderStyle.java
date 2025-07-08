@@ -2,10 +2,9 @@ package backend.actions.format;
 import backend.actions.Action;
 import backend.format.FigureFormatData;
 import frontend.BorderStyle;
-import frontend.FigureFormat;
 
 public class ChangeBorderStyle implements Action {
-    private final FigureFormat format;
+    private final FigureFormatData format;
     private final BorderStyle oldBorderType;
     private final BorderStyle newBorderType;
 

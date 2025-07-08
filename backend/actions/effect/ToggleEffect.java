@@ -2,7 +2,7 @@ package backend.actions.effect;
 
 import backend.actions.Action;
 
-public class RemoveEffect implements Action { //todo
+public class ToggleEffect implements Action {//todo
 
     @Override
     public void execute() {

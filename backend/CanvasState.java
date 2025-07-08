@@ -77,4 +77,6 @@ public class CanvasState implements Iterable<Figure> {
         return actionHistory.canRedo();
     }
 
+    public void moveFigure(Figure selectedFigure, double dx, double dy) {
+    }
 }

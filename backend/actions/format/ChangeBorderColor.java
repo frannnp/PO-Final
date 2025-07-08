@@ -1,14 +1,14 @@
 package backend.actions.format;
 import backend.actions.Action;
-import frontend.FigureFormat;
-import javafx.scene.paint.Color; //todo sacar esto
+import backend.format.ColorData;
+import backend.format.FigureFormatData;
 
 public class ChangeBorderColor implements Action {
-    private final FigureFormat format;
+    private final FigureFormatData format;
     private final ColorData oldColor;
     private final ColorData newColor;
 
-    public ChangeBorderColor(FigureFormat format, ColorData oldColor, ColorData newColor) {
+    public ChangeBorderColor(FigureFormatData format, ColorData oldColor, ColorData newColor) {
         this.format = format;
         this.oldColor = oldColor;
         this.newColor = newColor;

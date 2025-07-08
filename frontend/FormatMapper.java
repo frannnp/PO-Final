@@ -7,7 +7,7 @@ public class FormatMapper {
     public static FigureFormat toFxFormat(FigureFormatData data) {
         Color fill   = toFxColor(data.getFillColor());
         Color line    = toFxColor(data.getLineColor());
-        return new FigureFormat(fill,line);
+        return new FigureFormat(fill,line, null);
     }
     private static Color toFxColor(ColorData c) {
         if (c == null) return null;

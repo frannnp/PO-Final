@@ -3,7 +3,7 @@ package backend.model.figures;
 import backend.Movable;
 import backend.effects.EffectType;
 import backend.format.FigureFormatData;
-import frontend.MainFrame;
+
 
 import java.util.EnumSet;
 import java.util.Set;

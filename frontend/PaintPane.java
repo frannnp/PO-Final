@@ -2,6 +2,7 @@ package frontend;
 
 import backend.CanvasState;
 import backend.actions.figure.AddFigure;
+import backend.actions.operation.MoveFigure;
 import backend.model.figures.Figure;
 import backend.model.figures.Point;
 import frontend.drawers.*;
@@ -29,65 +30,38 @@ public class PaintPane extends BorderPane {
 	GraphicsContext gc = canvas.getGraphicsContext2D();
 
 
-	Color defaultLineColor = Color.BLACK;
-	Color defaultFillColor = Color.YELLOW;
-
-
 	// Botones Barra Izquierda
 	ToggleButton selectionButton = new ToggleButton("Seleccionar");
-	ToggleButton deleteButton = new ToggleButton("Borrar");
+	Button deleteButton = new Button("Borrar");
 
 	ToggleButton squareButton = new ToggleButton("Cuadrado");
 	ToggleButton rectangleButton = new ToggleButton("Rectángulo");
 	ToggleButton circleButton = new ToggleButton("Círculo");
 	ToggleButton ellipseButton = new ToggleButton("Elipse");
 
-	ToggleButton undoButton = new ToggleButton("Undo");
-	ToggleButton redoButton = new ToggleButton("Redo");
-
-	ToggleButton bringToFrontButton = new ToggleButton("Mandar al frente");
-	ToggleButton sendToBackButton = new ToggleButton("Enviar al fondo");
-
 	ChoiceBox<BorderStyle> borderChoice = new ChoiceBox<>();
 
-
-	ChoiceBox<String> layerChoiceBox = new ChoiceBox<>();
-	Button addLayerButton = new Button("Agregar Capa");
-	Button deleteLayerButton = new Button("Eliminar Capa");
-	ToggleGroup layerVisibilityGroup = new ToggleGroup();
-	RadioButton showLayerButton = new RadioButton("Mostrar");
-	RadioButton hideLayerButton = new RadioButton("Ocultar");
-	CheckBox lockLayerCheckBox = new CheckBox("Bloquear");
-
-	// Selector de color de relleno
+    Color defaultFillColor = Color.YELLOW;
 	ColorPicker fillColorPicker = new ColorPicker(defaultFillColor);
-	ColorPicker gradientColorPicker = new ColorPicker(defaultFillColor);
-	ColorPicker lineColorPicker = new ColorPicker(defaultLineColor);
 
-	// Dibujar una figura
+    Button copyFormatButton = new Button("Copiar"); //todo
+    Button pasteFormatButton = new Button("Pastar");
 
-
-	// StatusBar
 	StatusPane statusPane;
 
-	// Colores de relleno de cada figura
-	Map<Figure, Color> figureColorMap = new HashMap<>();
-	Map<ToggleButton, FigureFactory> figureFactoryMap = new HashMap<>();
-	Map<Figure, FigureFormat> figureFormatMap = new HashMap<>();
-	Map<Figure, FigureDrawer> figureDrawerMap = new HashMap<>();
-	Map<ToggleButton, FigureDrawer> buttonDrawerMap = new HashMap<>();
+	Map<ToggleButton, FigureFactory> factoryMap = new HashMap<>();
+	Map<Figure, FigureFormat> formatMap = new HashMap<>();
+	Map<Class<? extends Figure>, FigureDrawer> drawerRegistry = new HashMap<>();
 
 	private ToggleButton getSelectedFigureButton() {
 		for(ToggleButton tool : toolsArr){
-			if(tool.isSelected() && figureFactoryMap.containsKey(tool)) {
+			if(tool.isSelected() && factoryMap.containsKey(tool)) {
 				return tool;
 			}
 		}
 		return null;
 	}
-	ToggleButton[] toolsArr = {selectionButton,rectangleButton, circleButton, squareButton, ellipseButton, deleteButton, undoButton, redoButton};
-
-    ToggleButton selectedFigureButton;
+	ToggleButton[] toolsArr = {selectionButton,rectangleButton, circleButton, squareButton, ellipseButton};
 
 
 
@@ -95,48 +69,52 @@ public class PaintPane extends BorderPane {
         SELECT{
             @Override
             void onPressed(PaintPane pane, MouseEvent e){
-                Point p = new Point(e.getX(), e.getY());
-                Figure figure = pane.canvasState.findTopFigureInPoint(p);
-                if(figure == null){
+                if(pane.hoveredFigure == null){
                     pane.statusPane.updateStatus("Ninguna figura encontrada");
                 }
                 else {
-                    pane.statusPane.updateStatus(String.format("Se seleccionó: %s",figure));
+                    pane.statusPane.updateStatus(String.format("Se seleccionó: %s", pane.hoveredFigure));
                 }
-                pane.selectedFigure = figure;
+                pane.selectedFigure = pane.hoveredFigure;
                 pane.redrawCanvas();
 
             }
             @Override
             void onDragged(PaintPane pane, MouseEvent e){
-                //no me tengo que fijar si estoy agarrando una figura, porque onPressed ya se fija
-                double diffX = e.getX() - pane.drawStart.getX() ;
-                double diffY = e.getY() - pane.drawStart.getY() ;
+                if(pane.selectedFigure != null || pane.eventStart==null) return; //todo checquear si se puede draggear un mouse sin apretar
+                double dx = e.getX() - pane.eventStart.getX() ;
+                double dy = e.getY() - pane.eventStart.getY() ; //todo facilitar esto en el movefigure
+                pane.canvasState.executeAction(
+                        new MoveFigure(pane.canvasState, pane.selectedFigure, dx, dy)
+                );
+                //pane.canvasState.moveFigure(pane.selectedFigure, dx, dy);
+
                 pane.redrawCanvas();
-                pane.drawStart.move(diffX, diffY);
+                pane.eventStart.move(dx, dy);
             }
             @Override
-            void onReleased(PaintPane pane, MouseEvent e) {} //vacio
+            void onReleased(PaintPane pane, MouseEvent e) {
+            }
         },
         DRAW{
         @Override
             void onPressed(PaintPane pane, MouseEvent e){
-            pane.drawStart = new Point(e.getX(), e.getY());
         }
             @Override
             void onDragged(PaintPane pane, MouseEvent e){
-                Point p = new Point(e.getX(), e.getY());
-           //     pane.previewFigure = pane.generateFigure(pane.drawStart, p);
+                FigureFactory factory = pane.getActiveFactory();
+                if (factory == null || pane.eventStart==null ) return;
+                pane.previewFigure = factory.generateFigure(pane.eventStart, pane.eventCurrent);
+                pane.redrawCanvas();
+                pane.drawPreviewFigure();
             }
             @Override
             void onReleased(PaintPane pane, MouseEvent e) {
-                if (pane.previewFigure != null) {
-                    pane.canvasState.executeAction(
-                            new AddFigure(pane.canvasState, pane.previewFigure)
-                    );
-                    pane.registerFigureMaps(pane.previewFigure);
-                    pane.previewFigure = null;
-                }
+                if (pane.previewFigure == null) return;
+                pane.canvasState.executeAction(new AddFigure(pane.canvasState, pane.previewFigure));
+                pane.registerFigure(pane.previewFigure);
+                pane.previewFigure = null;
+                pane.redrawCanvas();
             }
         };
 
@@ -144,13 +122,40 @@ public class PaintPane extends BorderPane {
         abstract void onDragged(PaintPane pane, MouseEvent e);
         abstract void onReleased(PaintPane pane, MouseEvent e);
     }
-	private Mode mode = Mode.DRAW;
+
+    private void registerFigure(Figure f) {
+        drawerRegistry.put(f, drawerRegistry.get(f.getClass()));
+        formatMap.put(f, new FigureFormat())
+
+    }
+
+    private void drawPreviewFigure() {
+        if (previewFigure != null) {
+            FigureDrawer drawer = drawerResolver.get(previewFigure.getClass());
+            if (drawer != null) {
+                gc.setStroke(Color.GRAY);
+                gc.setLineDashes(5);
+                gc.setFill(Color.color(1, 1, 0, 0.4));
+                drawer.draw(gc, getFormat(), previewFigure);
+                gc.setLineDashes(0);
+            }
+        }
+    }
+
+    private FigureFactory getActiveFactory() {
+        ToggleButton button = getSelectedFigureButton();
+        return figureFactoryMap.get(button);
+    }
 
 
-    private Point drawStart;
-    private Point drawEnd;
+    private Mode mode = Mode.DRAW;
 
 
+    private Point eventStart;
+    private Point eventCurrent;
+
+
+    private Figure hoveredFigure;
     private Figure selectedFigure;
 	private Figure previewFigure;
 
@@ -182,20 +187,9 @@ public class PaintPane extends BorderPane {
 		VBox buttonsBox = new VBox(10);
 		buttonsBox.getChildren().addAll(toolsArr);
 		buttonsBox.getChildren().add(fillColorPicker);
-		buttonsBox.getChildren().add(gradientColorPicker);
-		buttonsBox.getChildren().add(lineColorPicker);
-
-		buttonsBox.getChildren().add(bringToFrontButton);
-		buttonsBox.getChildren().add(sendToBackButton);
 
 		buttonsBox.getChildren().add(borderChoice);
 
-		buttonsBox.getChildren().add(layerChoiceBox);
-		buttonsBox.getChildren().add(addLayerButton);
-		buttonsBox.getChildren().add(deleteLayerButton);
-		buttonsBox.getChildren().add(showLayerButton);
-		buttonsBox.getChildren().add(hideLayerButton);
-		buttonsBox.getChildren().add(lockLayerCheckBox);
 
 		buttonsBox.setPadding(new Insets(5));
 		buttonsBox.setStyle("-fx-background-color: #999");
@@ -204,11 +198,16 @@ public class PaintPane extends BorderPane {
 
 
 
-		canvas.setOnMousePressed(this::onMousePressed);
-		canvas.setOnMouseReleased(this::onMouseReleased);
+		canvas.setOnMousePressed(e -> {
+            eventStart= eventCurrent;
+            mode.onPressed(this, e);
+        });
+		canvas.setOnMouseReleased(e -> {
+            mode.onReleased(this, e);
+            eventStart= null;
+        });
 		canvas.setOnMouseMoved(this::onMouseMoved);
-		canvas.setOnMouseClicked(this::onMouseClicked);
-		canvas.setOnMouseDragged(this::onMouseDragged);
+		canvas.setOnMouseDragged(e -> mode.onDragged(this, e));
 
 		deleteButton.setOnAction(event -> {
 			if (selectedFigure != null) {
@@ -222,12 +221,6 @@ public class PaintPane extends BorderPane {
 		setRight(canvas);
 
 
-		sendToBackButton.setOnAction(event -> {
-			if (selectedFigure != null) {
-				canvasState.sendToBottom(selectedFigure);
-				redrawCanvas();
-			}
-		});
 		borderChoice.setOnAction(event ->{
 			if(selectedFigure != null){
 				figureFormatMap.get(selectedFigure).setBorderStyle(borderChoice.getValue());
@@ -235,28 +228,13 @@ public class PaintPane extends BorderPane {
 		});
 	}
 
-	private void onMouseDragged(MouseEvent event) {
-		if(selectionButton.isSelected() && selectedFigure != null) {
-
-
-
-
-		}
-	}
-
-	private void onMouseClicked(MouseEvent event) {
-		if(selectionButton.isSelected()) {
-
-		}
-	}
-
 	private void onMouseMoved(MouseEvent e) {
-		Point p = new Point(e.getX(), e.getY());
-		Figure figure = canvasState.findTopFigureInPoint(new Point(e.getX(), e.getY()));
-		if(figure != null){
-			statusPane.updateStatus(figure.toString());
+		eventCurrent = new Point(e.getX(), e.getY());
+		hoveredFigure = canvasState.findTopFigureInPoint(new Point(e.getX(), e.getY()));
+		if(hoveredFigure != null){
+			statusPane.updateStatus(hoveredFigure.toString());
 		} else {
-			statusPane.updateStatus(p.toString());
+			statusPane.updateStatus(eventCurrent.toString());
 		}
 	}
 
@@ -275,10 +253,10 @@ public class PaintPane extends BorderPane {
 
 		private void onMouseReleased(MouseEvent event) {
 		Point endPoint = new Point(event.getX(), event.getY());
-		if(drawStart == null) {
+		if(eventStart == null) {
 			return ;
 		}
-		if(endPoint.getX() < drawStart.getX() || endPoint.getY() < drawStart.getY()) {
+		if(endPoint.getX() < eventStart.getX() || endPoint.getY() < eventStart.getY()) {
 			return ;
 		}
 		ToggleButton button = getSelectedFigureButton();
@@ -286,18 +264,18 @@ public class PaintPane extends BorderPane {
 			return;
 
 		//FigureFormat format = new FigureFormat(Color.YELLOW,Color.ORANGE)
-		Figure newFigure = figureFactoryMap.get(button).generateFigure(drawStart,endPoint);
+		Figure newFigure = figureFactoryMap.get(button).generateFigure(eventStart,endPoint);
 		canvasState.executeAction(new AddFigure(canvasState,newFigure));
 
 		figureColorMap.put(newFigure, fillColorPicker.getValue());
-		figureFormatMap.put(newFigure, new FigureFormat(fillColorPicker.getValue(), gradientColorPicker.getValue(),lineColorPicker.getValue(),borderChoice.getValue()));
+		figureFormatMap.put(newFigure, new FigureFormat(fillColorPicker.getValue(), Color.BLACK,borderChoice.getValue()));
 		figureDrawerMap.put(newFigure, buttonDrawerMap.get(getSelectedFigureButton()));
 		canvasState.addFigure(newFigure);
-		drawStart = null;
+		eventStart = null;
 		redrawCanvas();
 	}
 
 	private void onMousePressed(MouseEvent event) {
-		drawStart = new Point(event.getX(), event.getY());
+		Mode.;
 	}
 }
