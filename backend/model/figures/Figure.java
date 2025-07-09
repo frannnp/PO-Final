@@ -8,7 +8,7 @@ import backend.format.FigureFormatData;
 import java.util.EnumSet;
 import java.util.Set;
 
-public abstract class Figure implements Movable {
+public abstract class Figure implements Movable , Cloneable {
             private FigureFormatData format;
             public abstract boolean belongs(Point p);
             @Override
@@ -21,7 +21,37 @@ public abstract class Figure implements Movable {
             public FigureFormatData getFormat(){
                 return format;
             }
+            public void setFormat(FigureFormatData format){
+                this.format = format;
+            }
 
+    @Override
+    public Figure clone() {
+        try {
+            Figure copy = (Figure) super.clone();
+            if (this.format != null) {
+                copy.format.setFormat(this.format);
+            }
+            copy.effects.clear();
+            copy.effects.addAll(this.effects);
+            return copy;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    public Figure copyWithOffset(double dx, double dy) {
+        Figure copy = clone();
+        copy.move(dx, dy);
+        return copy;
+    }
+    public abstract Figure copyScaled(double scaleX, double scaleY);
+    public  Figure createHorizontalMirror(){
+        return copyScaled(-1,1);
+    }
+    public Figure createVerticalMirror(){
+        return copyScaled(1, -1);
+    }
 
     private final Set<EffectType> effects = EnumSet.noneOf(EffectType.class);
 
@@ -40,6 +70,7 @@ public abstract class Figure implements Movable {
         if (effects.contains(effect)) effects.remove(effect);
         else effects.add(effect);
     }
+
 
     public boolean hasEffect(EffectType effect) {
         return effects.contains(effect);

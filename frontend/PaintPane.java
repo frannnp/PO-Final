@@ -287,18 +287,11 @@ public class PaintPane extends BorderPane {
 
         borderChoice.valueProperty().addListener((obs, old, nw) -> {
             if (selectedFigure != null) {
-                // 1) actualiza el formato en memoria
-                formatMap.get(selectedFigure).setBorderStyle(nw);
-                // 2) registra la acción en el historial
-                //canvasState.executeAction(new ChangeBorderStyle(selectedFigure, old, nw));
+                canvasState.executeAction(new ChangeBorderStyle(selectedFigure, nw));
                 redrawCanvas();
             }
         });
-		borderChoice.setOnAction(event ->{
-			if(selectedFigure != null){
-				formatMap.get(selectedFigure).setBorderStyle(borderChoice.getValue());
-			}
-		});
+
 	}
 
 	private void onMouseMoved(MouseEvent e) {

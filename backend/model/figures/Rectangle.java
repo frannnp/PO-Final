@@ -35,6 +35,17 @@ public class Rectangle extends Figure {
         return "Rectángulo";
     }
 
+    @Override
+    public Figure copyScaled(double scaleX, double scaleY) {
+        double width = width();
+        double height = height();
+        return new Rectangle(
+                new Point(topLeft.getX(), topLeft.getY()),
+                new Point(topLeft.getX() + width * scaleX, topLeft.getY() + height * scaleY)
+        );
+    }
+
+
     public String getParameters(){
         return String.format("%s , %s", topLeft, bottomRight);
     }

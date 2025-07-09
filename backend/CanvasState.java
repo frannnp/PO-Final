@@ -1,14 +1,6 @@
 package backend;
 
 import backend.actions.Action;
-import backend.actions.figure.AddFigure;
-import backend.actions.figure.DeleteFigure;
-import backend.actions.effect.AddEffect;
-import backend.actions.effect.RemoveEffect;
-import backend.actions.effect.ToggleEffect;
-import backend.actions.format.ChangeBorderColor;
-
-import backend.effects.EffectType;
 
 import backend.model.figures.Figure;
 import backend.model.figures.Point;

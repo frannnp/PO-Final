@@ -2,6 +2,8 @@ package backend.model.figures;
 
 public class Ellipse extends Figure {
 
+
+
     protected final Point centerPoint;
     protected final double sMayorAxis, sMinorAxis;
 
@@ -42,4 +44,12 @@ public class Ellipse extends Figure {
         return "Elipse";
     }
 
+    @Override
+    public Figure copyScaled(double scaleX, double scaleY) {
+        double newSMayorAxis = sMayorAxis * scaleX;
+        double newSMinorAxis = sMinorAxis * scaleY;
+        double newCenterX = centerPoint.getX() + sMayorAxis * (scaleX - 1);
+        double newCenterY = centerPoint.getY() + sMinorAxis * (scaleY - 1);
+        return new Ellipse(new Point(newCenterX, newCenterY), newSMayorAxis, newSMinorAxis);
+    }
 }
