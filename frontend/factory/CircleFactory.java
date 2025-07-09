@@ -7,9 +7,6 @@ import backend.model.figures.Point;
 import frontend.PaintPane;
 
 public class CircleFactory extends EllipseFactory{
-    public CircleFactory(PaintPane paintpane, CanvasState canvas) {
-        super(paintpane, canvas);
-    }
 
     @Override
     public Figure generateFigure(Point startPoint, Point endPoint){

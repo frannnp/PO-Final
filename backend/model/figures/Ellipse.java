@@ -41,4 +41,5 @@ public class Ellipse extends Figure {
     public String getName() {
         return "Elipse";
     }
+
 }

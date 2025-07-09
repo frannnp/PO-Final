@@ -1,15 +1,11 @@
 package frontend.factory;
 
-import backend.CanvasState;
+
 import backend.model.figures.Ellipse;
 import backend.model.figures.Figure;
 import backend.model.figures.Point;
-import frontend.PaintPane;
 
 public class EllipseFactory extends FigureFactory{
-    public EllipseFactory(PaintPane paintpane, CanvasState canvas) {
-        super(paintpane, canvas);
-    }
 
     @Override
     public Figure generateFigure(Point startPoint, Point endPoint) {

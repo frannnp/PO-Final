@@ -1,10 +1,15 @@
 package frontend;
 
 import backend.CanvasState;
+import backend.actions.effect.AddEffect;
+import backend.actions.effect.RemoveEffect;
 import backend.actions.figure.AddFigure;
+import backend.actions.format.ChangeBorderStyle;
+import backend.actions.format.PasteFormat;
 import backend.actions.operation.MoveFigure;
-import backend.model.figures.Figure;
-import backend.model.figures.Point;
+import backend.effects.EffectType;
+import backend.model.figures.*;
+import com.sun.javafx.collections.ObservableMapWrapper;
 import frontend.drawers.*;
 import frontend.factory.*;
 import javafx.geometry.Insets;
@@ -17,6 +22,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.input.MouseEvent;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,9 +55,16 @@ public class PaintPane extends BorderPane {
 
 	StatusPane statusPane;
 
+
+
 	Map<ToggleButton, FigureFactory> factoryMap = new HashMap<>();
+     Map<ToggleButton, FigureDrawer> drawerRegistry = new HashMap<>();
+    Map<CheckBox, EffectType> effects = new HashMap<>();
+
 	Map<Figure, FigureFormat> formatMap = new HashMap<>();
-	Map<Class<? extends Figure>, FigureDrawer> drawerRegistry = new HashMap<>();
+    Map<Figure, EnumSet<EffectType>> effectMap = new HashMap<>();
+    Map<Figure, FigureDrawer> drawerMap = new HashMap<>();
+
 
 	private ToggleButton getSelectedFigureButton() {
 		for(ToggleButton tool : toolsArr){
@@ -112,7 +125,7 @@ public class PaintPane extends BorderPane {
             void onReleased(PaintPane pane, MouseEvent e) {
                 if (pane.previewFigure == null) return;
                 pane.canvasState.executeAction(new AddFigure(pane.canvasState, pane.previewFigure));
-                pane.registerFigure(pane.previewFigure);
+                pane.registerFigure(pane.previewFigure, pane.getActiveDrawer());
                 pane.previewFigure = null;
                 pane.redrawCanvas();
             }
@@ -123,28 +136,49 @@ public class PaintPane extends BorderPane {
         abstract void onReleased(PaintPane pane, MouseEvent e);
     }
 
-    private void registerFigure(Figure f) {
-        drawerRegistry.put(f, drawerRegistry.get(f.getClass()));
-        formatMap.put(f, new FigureFormat())
+    private void registerFigure(Figure f, FigureDrawer drawer) {
+        if (drawer == null) {
+            throw new IllegalStateException("No hay drawer para " + f.getClass());
+        }
+        for (EffectType e : getEffects()) {
+            //canvasState.executeAction(new AddEffect(f, e));
+        }
+        //canvasState.executeAction(new PasteFormat(f,getFormat()));
+        formatMap.put(f, getFormat());
+        effectMap.put(f, EnumSet.copyOf(getEffects()));
+        drawerMap.put(f,drawer); //todo probar
+
+        formatMap.put(f, getFormat());
 
     }
 
     private void drawPreviewFigure() {
         if (previewFigure != null) {
-            FigureDrawer drawer = drawerResolver.get(previewFigure.getClass());
-            if (drawer != null) {
-                gc.setStroke(Color.GRAY);
-                gc.setLineDashes(5);
-                gc.setFill(Color.color(1, 1, 0, 0.4));
-                drawer.draw(gc, getFormat(), previewFigure);
-                gc.setLineDashes(0);
-            }
+
+            getActiveDrawer().draw(gc, getFormat(), previewFigure, getEffects());
+
         }
     }
 
     private FigureFactory getActiveFactory() {
         ToggleButton button = getSelectedFigureButton();
-        return figureFactoryMap.get(button);
+        return factoryMap.get(button);
+    }
+    private FigureDrawer getActiveDrawer() {
+        ToggleButton button = getSelectedFigureButton();
+        return drawerRegistry.get(button);
+    }
+    private FigureFormat getFormat() {
+        return new FigureFormat(fillColorPicker.getValue(),Color.BLACK, borderChoice.getValue());
+    }
+    private EnumSet<EffectType> getEffects() {
+        EnumSet<EffectType> active = EnumSet.noneOf(EffectType.class);
+        for (Map.Entry<CheckBox, EffectType> entry : effects.entrySet()) {
+            if (entry.getKey().isSelected()) {
+                active.add(entry.getValue());
+            }
+        }
+        return active;
     }
 
 
@@ -161,6 +195,7 @@ public class PaintPane extends BorderPane {
 
 
 
+
 	public PaintPane(CanvasState canvasState, StatusPane statusPane) {
 		this.canvasState = canvasState;
 		this.statusPane = statusPane;
@@ -174,15 +209,14 @@ public class PaintPane extends BorderPane {
 		}
 
 
-		figureFactoryMap.put(rectangleButton, new RectangleFactory(this,canvasState));
-		figureFactoryMap.put(ellipseButton, new EllipseFactory(this,canvasState));
-		figureFactoryMap.put(circleButton,new CircleFactory(this,canvasState));
-		figureFactoryMap.put(squareButton,new SquareFactory(this,canvasState));
-
-		buttonDrawerMap.put(rectangleButton, new RectangleDrawer());
-		buttonDrawerMap.put(ellipseButton, new EllipseDrawer());
-		buttonDrawerMap.put(circleButton, new CircleDrawer());
-		buttonDrawerMap.put(squareButton, new SquareDrawer());
+		factoryMap.put(rectangleButton, new RectangleFactory());
+        drawerRegistry.put(rectangleButton, new RectangleDrawer());
+		factoryMap.put(ellipseButton, new EllipseFactory());
+        drawerRegistry.put(ellipseButton,   new EllipseDrawer());
+		factoryMap.put(circleButton,new CircleFactory());
+        drawerRegistry.put(circleButton,    new CircleDrawer());
+		factoryMap.put(squareButton,new SquareFactory());
+        drawerRegistry.put(squareButton,    new SquareDrawer());
 
 		VBox buttonsBox = new VBox(10);
 		buttonsBox.getChildren().addAll(toolsArr);
@@ -216,14 +250,53 @@ public class PaintPane extends BorderPane {
 				redrawCanvas();
 			}
 		});
+        selectionButton.selectedProperty().addListener((obs, wasSelected, isNowSelected) -> {
+            if (isNowSelected) {
+                mode = Mode.SELECT;
+            } else {
+                mode = Mode.DRAW;
+            }
+        });
 
 		setLeft(buttonsBox);
 		setRight(canvas);
 
+        for (EffectType type : EffectType.values()) {
+            CheckBox box = new CheckBox(type.getDisplayName());
+            effects.put(box, type);
+            buttonsBox.getChildren().add(box);
 
+            box.setOnAction(e -> {
+                if (selectedFigure == null) {
+                    box.setSelected(false);
+                    return;
+                }
+                boolean on = box.isSelected();
+                if (on) {
+                    //canvasState.executeAction(new AddEffect(selectedFigure, type));
+                    effectMap.get(selectedFigure).add(type);
+                } else {
+                    //canvasState.executeAction(new RemoveEffect(selectedFigure, type));
+                    effectMap.get(selectedFigure).remove(type);
+                }
+            });
+        }
+
+        borderChoice.getItems().addAll(BorderStyle.values());
+        borderChoice.setValue(BorderStyle.SOLID);
+
+        borderChoice.valueProperty().addListener((obs, old, nw) -> {
+            if (selectedFigure != null) {
+                // 1) actualiza el formato en memoria
+                formatMap.get(selectedFigure).setBorderStyle(nw);
+                // 2) registra la acción en el historial
+                //canvasState.executeAction(new ChangeBorderStyle(selectedFigure, old, nw));
+                redrawCanvas();
+            }
+        });
 		borderChoice.setOnAction(event ->{
 			if(selectedFigure != null){
-				figureFormatMap.get(selectedFigure).setBorderStyle(borderChoice.getValue());
+				formatMap.get(selectedFigure).setBorderStyle(borderChoice.getValue());
 			}
 		});
 	}
@@ -238,44 +311,23 @@ public class PaintPane extends BorderPane {
 		}
 	}
 
-	void redrawCanvas() {
-		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-		for(Figure figure : canvasState.figures()) {
-			if(figure == selectedFigure) {
-				gc.setStroke(Color.RED);
-			} else {
-				gc.setStroke(figureFormatMap.get(figure).getLineColor());
-			}
-			gc.setFill(figureColorMap.get(figure));
-			figureDrawerMap.get(figure).draw(gc,figureFormatMap.get(figure),figure);
-		}
-	}
+    void redrawCanvas() {
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        for (Figure f : canvasState.figures()) {
+            FigureFormat fmt    = formatMap.get(f);
+            FigureDrawer dr     = drawerMap.get(f);
+            EnumSet<EffectType> efs = effectMap.getOrDefault(f, getEffects());
 
-		private void onMouseReleased(MouseEvent event) {
-		Point endPoint = new Point(event.getX(), event.getY());
-		if(eventStart == null) {
-			return ;
-		}
-		if(endPoint.getX() < eventStart.getX() || endPoint.getY() < eventStart.getY()) {
-			return ;
-		}
-		ToggleButton button = getSelectedFigureButton();
-		if(button == null)
-			return;
+            if (f == selectedFigure) {
+                gc.setStroke(Color.RED);
+            } else {
+                gc.setStroke(fmt.getLineColor());
+            }
+            gc.setFill(fmt.getFillColor());
 
-		//FigureFormat format = new FigureFormat(Color.YELLOW,Color.ORANGE)
-		Figure newFigure = figureFactoryMap.get(button).generateFigure(eventStart,endPoint);
-		canvasState.executeAction(new AddFigure(canvasState,newFigure));
+            dr.draw(gc, fmt, f, efs);
+        }
+    }
 
-		figureColorMap.put(newFigure, fillColorPicker.getValue());
-		figureFormatMap.put(newFigure, new FigureFormat(fillColorPicker.getValue(), Color.BLACK,borderChoice.getValue()));
-		figureDrawerMap.put(newFigure, buttonDrawerMap.get(getSelectedFigureButton()));
-		canvasState.addFigure(newFigure);
-		eventStart = null;
-		redrawCanvas();
-	}
 
-	private void onMousePressed(MouseEvent event) {
-		Mode.;
-	}
 }

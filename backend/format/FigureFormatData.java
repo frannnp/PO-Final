@@ -1,14 +1,11 @@
 package backend.format;
 
-import frontend.BorderStyle;
-import frontend.ShadowStyle;
-
 
 public class FigureFormatData {
     private ColorData fillColor;
     private ColorData lineColor;
-    private BorderStyle borderStyle;
-    public FigureFormatData(ColorData fillColor, ColorData lineColor, BorderStyle border) {
+    private BorderType borderStyle;
+    public FigureFormatData(ColorData fillColor, ColorData lineColor, BorderType border) {
         this.fillColor = fillColor;
         this.lineColor = lineColor;
         this.borderStyle = border;
@@ -28,10 +25,10 @@ public class FigureFormatData {
         this.lineColor = lineColor;
     }
 
-    public BorderStyle getBorderStyle() {
+    public BorderType getBorderStyle() {
         return borderStyle;
     }
-    public void setBorderStyle(BorderStyle borderStyle) {
+    public void setBorderStyle(BorderType borderStyle) {
         this.borderStyle = borderStyle;
     }
 

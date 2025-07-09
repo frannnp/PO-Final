@@ -1,7 +1,7 @@
 package backend.actions.format;
 import backend.actions.Action;
 import backend.format.FigureFormatData;
-import frontend.BorderStyle;
+import frontend.BorderStyle; //todo sacar
 
 public class ChangeBorderStyle implements Action {
     private final FigureFormatData format;
@@ -16,11 +16,11 @@ public class ChangeBorderStyle implements Action {
 
     @Override
     public void execute() {
-        format.setBorderStyle(newBorderType);
+      //  format.setBorderStyle(newBorderType);
     }
 
     @Override
     public void undo() {
-        format.setBorderStyle(oldBorderType);
+      //  format.setBorderStyle(oldBorderType);
     }
 }

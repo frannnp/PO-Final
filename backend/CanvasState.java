@@ -24,11 +24,11 @@ public class CanvasState implements Iterable<Figure> {
     private final ActionHistory actionHistory = new ActionHistory();
 
     public void addFigure(Figure figure) {
-        actionHistory.execute(new AddFigure(this, figure));
+        figures.add(figure);
     }
 
     public void deleteFigure(Figure figure) {
-        actionHistory.execute(new DeleteFigure(this, figure));
+        figures.remove(figure);
     }
 
     public Figure findTopFigureInPoint(Point p){
