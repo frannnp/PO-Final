@@ -1,7 +1,7 @@
-package backend.format;
+package backend.model.format;
 
 
-import backend.effects.EffectType;
+import backend.model.effects.EffectType;
 
 import java.util.EnumSet;
 
@@ -28,7 +28,7 @@ public class FigureFormatData {
         this.borderStyle = borderStyle;
     }
 
-    public EnumSet<EffectType> getEffects() {return getEffects();
+    public EnumSet<EffectType> getEffects() {return effects;
     }
     public void setEffects(EnumSet<EffectType> effects) {
         this.effects = effects;

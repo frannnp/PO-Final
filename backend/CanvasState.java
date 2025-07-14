@@ -2,18 +2,25 @@ package backend;
 
 import backend.actions.Action;
 
+import backend.actions.ActionHistory;
+import backend.model.effects.EffectType;
+import backend.model.format.ColorData;
+import backend.model.format.FigureFormatData;
 import backend.model.figures.Figure;
 import backend.model.figures.Point;
+import backend.model.format.borderStyle;
 
 
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 
 public class CanvasState implements Iterable<Figure> {
 
-    private final List<Figure> figures = new LinkedList<>();
+    private final LinkedList<Figure> figures = new LinkedList<>();
     private final ActionHistory actionHistory = new ActionHistory();
+
+    private FigureFormatData currentFormat;
+    private FigureFormatData copiedFormat;
 
     public void addFigure(Figure figure) {
         figures.add(figure);
@@ -69,6 +76,32 @@ public class CanvasState implements Iterable<Figure> {
         return actionHistory.canRedo();
     }
 
-    public void moveFigure(Figure selectedFigure, double dx, double dy) {
+    public void moveFigure(Figure f, double dx, double dy) {
+        f.move(dx, dy);
     }
+    public void addEffect(Figure f, EffectType effect) {
+        f.addEffect(effect);
+    }
+    public void removeEffect(Figure f, EffectType effect) {
+        f.removeEffect(effect);
+    }
+    public void changeBorder(Figure f, borderStyle border) {
+        f.setBorder(border);
+    }
+    public void setFillColor(Figure f, ColorData color) {
+            f.setFillColor(color);
+    }
+    public void copyFormat(Figure f) {
+            this.copiedFormat = f.getFormat();
+    }
+    public void pasteFormat(Figure f) {
+        f.setFormat(this.copiedFormat);
+    }
+    public FigureFormatData getCurrentFormat() {
+        return currentFormat;
+    }
+    public void setCurrentFormat(FigureFormatData currentFormat) {
+        this.currentFormat = currentFormat;
+    }
+
 }

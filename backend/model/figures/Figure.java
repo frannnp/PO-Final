@@ -1,8 +1,9 @@
 package backend.model.figures;
 
-import backend.Movable;
-import backend.effects.EffectType;
-import backend.format.FigureFormatData;
+import backend.model.effects.EffectType;
+import backend.model.format.ColorData;
+import backend.model.format.FigureFormatData;
+import backend.model.format.borderStyle;
 
 
 import java.util.EnumSet;
@@ -74,6 +75,15 @@ public abstract class Figure implements Movable , Cloneable {
 
     public boolean hasEffect(EffectType effect) {
         return effects.contains(effect);
+    }
+    public void setFillColor(ColorData c){
+        format.setFillColor(c);
+    }
+    public void setBorder(borderStyle b){
+        format.setBorderStyle(b);
+    }
+    void setEffects(EnumSet<EffectType> e){
+        format.setEffects(e);
     }
 
 }

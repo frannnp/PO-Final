@@ -1,4 +1,4 @@
-package backend.format;
+package backend.model.format;
 
 
 public class ColorData {

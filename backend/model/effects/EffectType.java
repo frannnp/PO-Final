@@ -1,4 +1,4 @@
-package backend.effects;
+package backend.model.effects;
 
 public enum EffectType {//todo
     ACTIVE("Toggle"),

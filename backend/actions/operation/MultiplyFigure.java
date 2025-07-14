@@ -9,13 +9,13 @@ import java.util.List;
 /**
  * Divide una figura (Rect o Elipse) a lo alto en N partes.
  */
-public class DivideHeight implements Action {
+public class MultiplyFigure implements Action {
     private final CanvasState canvas;
     private final Figure original;
     private final int parts;
     private final List<Figure> created = new ArrayList<>();
 
-    public DivideHeight(CanvasState canvas, Figure original, int parts) {
+    public MultiplyFigure(CanvasState canvas, Figure original, int parts) {
         if (parts <= 0) throw new IllegalArgumentException("N debe ser >0");
         this.canvas   = canvas;
         this.original = original;
@@ -24,7 +24,7 @@ public class DivideHeight implements Action {
 
     @Override
     public void execute() {
-        canvas.deleteFigureInternal(original);
+        canvas.deleteFigure(original);
 
         double w, h, startX, startY;
         if (original instanceof Rectangle) {
@@ -39,7 +39,7 @@ public class DivideHeight implements Action {
                 Point tl = new Point(startX, startY + i * sliceH);
                 Point br = new Point(startX + w, startY + (i + 1) * sliceH);
                 Rectangle part = new Rectangle(tl, br);
-                canvas.addFigureInternal(part);
+                canvas.addFigure(part);
                 created.add(part);
             }
         } else if (original instanceof Ellipse) {
@@ -52,7 +52,7 @@ public class DivideHeight implements Action {
             for (int i = 0; i < parts; i++) {
                 double subCy = cy - h/2 + slice*(i + 0.5);
                 Ellipse part = new Ellipse(new Point(cx, subCy), w, slice);
-                canvas.addFigureInternal(part);
+                canvas.addFigure(part);
                 created.add(part);
             }
         }
@@ -60,8 +60,8 @@ public class DivideHeight implements Action {
 
     @Override
     public void undo() {
-        created.forEach(f -> canvas.deleteFigureInternal(f));
+        created.forEach(f -> canvas.deleteFigure(f));
         created.clear();
-        canvas.addFigureInternal(original);
+        canvas.addFigure(original);
     }
 }

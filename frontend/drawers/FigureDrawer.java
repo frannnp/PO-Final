@@ -1,6 +1,6 @@
 package frontend.drawers;
 
-import backend.effects.EffectType;
+import backend.model.effects.EffectType;
 import backend.model.figures.Figure;
 import frontend.FigureFormat;
 import javafx.scene.canvas.GraphicsContext;

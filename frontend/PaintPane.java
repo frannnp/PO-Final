@@ -1,15 +1,13 @@
 package frontend;
 
 import backend.CanvasState;
-import backend.actions.effect.AddEffect;
-import backend.actions.effect.RemoveEffect;
 import backend.actions.figure.AddFigure;
+import backend.actions.figure.DeleteFigure;
 import backend.actions.format.ChangeBorderStyle;
-import backend.actions.format.PasteFormat;
 import backend.actions.operation.MoveFigure;
-import backend.effects.EffectType;
+import backend.model.effects.EffectType;
 import backend.model.figures.*;
-import com.sun.javafx.collections.ObservableMapWrapper;
+import backend.model.format.FigureFormatData;
 import frontend.drawers.*;
 import frontend.factory.*;
 import javafx.geometry.Insets;
@@ -53,12 +51,16 @@ public class PaintPane extends BorderPane {
     Button copyFormatButton = new Button("Copiar"); //todo
     Button pasteFormatButton = new Button("Pastar");
 
+    Button undoButton = new Button("Deshacer");
+    Button redoButton = new Button("Rehacer");
+
+
 	StatusPane statusPane;
 
 
 
 	Map<ToggleButton, FigureFactory> factoryMap = new HashMap<>();
-     Map<ToggleButton, FigureDrawer> drawerRegistry = new HashMap<>();
+    Map<ToggleButton, FigureDrawer> drawerRegistry = new HashMap<>();
     Map<CheckBox, EffectType> effects = new HashMap<>();
 
 	Map<Figure, FigureFormat> formatMap = new HashMap<>();
@@ -96,12 +98,10 @@ public class PaintPane extends BorderPane {
             void onDragged(PaintPane pane, MouseEvent e){
                 if(pane.selectedFigure != null || pane.eventStart==null) return; //todo checquear si se puede draggear un mouse sin apretar
                 double dx = e.getX() - pane.eventStart.getX() ;
-                double dy = e.getY() - pane.eventStart.getY() ; //todo facilitar esto en el movefigure
+                double dy = e.getY() - pane.eventStart.getY() ;
                 pane.canvasState.executeAction(
                         new MoveFigure(pane.canvasState, pane.selectedFigure, dx, dy)
                 );
-                //pane.canvasState.moveFigure(pane.selectedFigure, dx, dy);
-
                 pane.redrawCanvas();
                 pane.eventStart.move(dx, dy);
             }
@@ -131,9 +131,14 @@ public class PaintPane extends BorderPane {
             }
         };
 
+
         abstract void onPressed(PaintPane pane, MouseEvent e);
         abstract void onDragged(PaintPane pane, MouseEvent e);
         abstract void onReleased(PaintPane pane, MouseEvent e);
+    }
+
+    private FigureFormatData getCurrentFormatData() {
+        return getFormat().toData();
     }
 
     private void registerFigure(Figure f, FigureDrawer drawer) {
@@ -169,7 +174,7 @@ public class PaintPane extends BorderPane {
         return drawerRegistry.get(button);
     }
     private FigureFormat getFormat() {
-        return new FigureFormat(fillColorPicker.getValue(),Color.BLACK, borderChoice.getValue());
+        return new FigureFormat(fillColorPicker.getValue(),borderChoice.getValue());
     }
     private EnumSet<EffectType> getEffects() {
         EnumSet<EffectType> active = EnumSet.noneOf(EffectType.class);
@@ -193,7 +198,10 @@ public class PaintPane extends BorderPane {
     private Figure selectedFigure;
 	private Figure previewFigure;
 
-
+    private void updateUndoRedoButtons() {
+        undoButton.setDisable(!canvasState.canUndo());
+        redoButton.setDisable(!canvasState.canRedo());
+    }
 
 
 	public PaintPane(CanvasState canvasState, StatusPane statusPane) {
@@ -223,7 +231,7 @@ public class PaintPane extends BorderPane {
 		buttonsBox.getChildren().add(fillColorPicker);
 
 		buttonsBox.getChildren().add(borderChoice);
-
+        buttonsBox.getChildren().addAll(undoButton, redoButton);
 
 		buttonsBox.setPadding(new Insets(5));
 		buttonsBox.setStyle("-fx-background-color: #999");
@@ -245,7 +253,7 @@ public class PaintPane extends BorderPane {
 
 		deleteButton.setOnAction(event -> {
 			if (selectedFigure != null) {
-				canvasState.deleteFigure(selectedFigure);
+                canvasState.executeAction(new DeleteFigure(canvasState, selectedFigure));
 				selectedFigure = null;
 				redrawCanvas();
 			}
@@ -282,12 +290,23 @@ public class PaintPane extends BorderPane {
             });
         }
 
+        undoButton.setOnAction(e -> {
+            canvasState.undo();
+            redrawCanvas();
+            updateUndoRedoButtons();
+        });
+        redoButton.setOnAction(e -> {
+            canvasState.redo();
+            redrawCanvas();
+            updateUndoRedoButtons();
+        });
+
         borderChoice.getItems().addAll(BorderStyle.values());
         borderChoice.setValue(BorderStyle.SOLID);
 
         borderChoice.valueProperty().addListener((obs, old, nw) -> {
             if (selectedFigure != null) {
-                canvasState.executeAction(new ChangeBorderStyle(selectedFigure, nw));
+                canvasState.executeAction(new ChangeBorderStyle(selectedFigure, FormatMapper.toData(nw)));
                 redrawCanvas();
             }
         });
@@ -314,7 +333,7 @@ public class PaintPane extends BorderPane {
             if (f == selectedFigure) {
                 gc.setStroke(Color.RED);
             } else {
-                gc.setStroke(fmt.getLineColor());
+                gc.setStroke(Color.BLACK);//fmt.getLineColor());
             }
             gc.setFill(fmt.getFillColor());
 

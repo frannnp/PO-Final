@@ -1,8 +1,8 @@
 package backend.actions.format;
 
 import backend.actions.Action;
-import backend.format.ColorData;
-import backend.format.FigureFormatData;
+import backend.model.format.ColorData;
+import backend.model.format.FigureFormatData;
 
 public class ChangeFillColor implements Action {
     private final FigureFormatData format;

@@ -1,11 +1,12 @@
 package frontend;
-import backend.format.borderStyle;
-import backend.format.ColorData;
+import backend.model.format.FigureFormatData;
+import backend.model.format.borderStyle;
+import backend.model.format.ColorData;
 import javafx.scene.paint.Color;
 
 public class FormatMapper {
 
-    public static BorderStyle toFxBorder(borderStyle style) {
+    public static BorderStyle toFx(borderStyle style) {
         switch(style) {
             case SOLID:          return BorderStyle.SOLID;
             case PIXELATED:      return BorderStyle.PIXELATED;
@@ -14,7 +15,7 @@ public class FormatMapper {
             default:             throw new IllegalArgumentException(style.name());
         }
     }
-    public static borderStyle toBorderData(BorderStyle fx) {
+    public static borderStyle toData(BorderStyle fx) {
         switch(fx) {
             case SOLID:          return borderStyle.SOLID;
             case PIXELATED:      return borderStyle.PIXELATED;
@@ -24,7 +25,7 @@ public class FormatMapper {
         }
     }
 
-    public static Color toFxColor(ColorData c) {
+    public static Color toFx(ColorData c) {
         if (c == null) return null;
         return new Color(
                 c.getRed()   / 255.0,
@@ -34,7 +35,7 @@ public class FormatMapper {
         );
     }
 
-    public static ColorData toColorData(Color fx) {
+    public static ColorData toData(Color fx) {
         return new ColorData(
                 (int)(fx.getRed()   * 255),
                 (int)(fx.getGreen() * 255),
@@ -43,4 +44,7 @@ public class FormatMapper {
         );
     }
 
+    public static FigureFormatData toData(FigureFormat f) {
+        return new FigureFormatData(toData(f.getFillColor()), toData(f.getBorderStyle()));
+    }
 }

@@ -4,28 +4,28 @@ import backend.CanvasState;
 import backend.actions.Action;
 import backend.model.figures.Figure;
 
-/** Mueve una figura a unas coordenadas absolutas (x,y). */
+/** Mueve una figura a unas coordenadas absolutas (x,y). */ //todo
 public class TranslateFigure implements Action {
+    private final CanvasState canvas;
     private final Figure figure;
     private final double oldX, oldY;
     private final double newX, newY;
 
-    public TranslateFigure(CanvasState canvas, Figure figure, double newX, double newY) {
+    public TranslateFigure(CanvasState canvas, CanvasState canvas1, Figure figure, double oldX, double oldY, double newX, double newY) {
+        this.canvas = canvas1;
         this.figure = figure;
-        // asumimos que Figure tiene getPosition() o similar
-        this.oldX   = figure.getPosition().getX();
-        this.oldY   = figure.getPosition().getY();
+        this.oldX = oldX;
+        this.oldY = oldY;
         this.newX   = newX;
         this.newY   = newY;
     }
 
     @Override
     public void execute() {
-        figure.moveTo(newX, newY);
+        canvas.moveFigure(figure, oldX, oldY);
     }
 
     @Override
     public void undo() {
-        figure.moveTo(oldX, oldY);
-    }
+        canvas.moveFigure(figure, oldX, oldY);}
 }

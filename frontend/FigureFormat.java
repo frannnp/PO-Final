@@ -1,17 +1,22 @@
 package frontend;
 
-import backend.format.FigureFormatData;
+import backend.model.format.FigureFormatData;
 import javafx.scene.paint.Color;
 
-import static frontend.FormatMapper.toFxBorder;
-import static frontend.FormatMapper.toFxColor;
+import static frontend.FormatMapper.toFx;
+import static frontend.FormatMapper.toFx;
 
 public class FigureFormat {
     private Color fillColor;
     private BorderStyle borderStyle;
     public FigureFormat(FigureFormatData d) {
-        this.fillColor = toFxColor(d.getFillColor());
-        this.borderStyle = toFxBorder(d.getBorderStyle());
+        this.fillColor = toFx(d.getFillColor());
+        this.borderStyle = FormatMapper.toFx(d.getBorderStyle());
+    }
+
+    public FigureFormat(Color fill, BorderStyle b) {
+        this.fillColor = fill;
+        this.borderStyle = b;
     }
 
     public Color getFillColor() {
@@ -21,4 +26,7 @@ public class FigureFormat {
         return borderStyle;
     }
 
+    public FigureFormatData toData() {
+        return FormatMapper.toData(this);
+    }
 }

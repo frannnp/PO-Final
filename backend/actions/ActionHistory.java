@@ -1,6 +1,4 @@
-package backend;
-
-import backend.actions.Action;
+package backend.actions;
 
 import java.util.Stack;
 
