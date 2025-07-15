@@ -15,7 +15,6 @@ import backend.actions.operation.MoveFigure;
 import backend.actions.operation.MultiplyFigure;
 import backend.model.effects.EffectType;
 import backend.model.figures.*;
-import backend.model.format.ColorData;
 import backend.model.format.FigureFormatData;
 import frontend.drawers.*;
 import frontend.factory.*;
@@ -29,7 +28,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.shape.MoveTo;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -38,7 +36,7 @@ import java.util.Map;
 public class PaintPane extends BorderPane {
 
 	// BackEnd
-    private  CanvasState canvasState;
+    private final CanvasState canvasState;
 
 	// Canvas y relacionados
     private final Canvas canvas = new Canvas(800, 600);
@@ -46,15 +44,15 @@ public class PaintPane extends BorderPane {
 
 
 	// Botones Barra Izquierda
-	ToggleButton selectionButton = new ToggleButton("Seleccionar");
-	Button deleteButton = new Button("Borrar");
+    final ToggleButton selectionButton = new ToggleButton("Seleccionar");
+	final Button deleteButton = new Button("Borrar");
 
-	ToggleButton squareButton = new ToggleButton("Cuadrado");
-	ToggleButton rectangleButton = new ToggleButton("Rectángulo");
-	ToggleButton circleButton = new ToggleButton("Círculo");
-	ToggleButton ellipseButton = new ToggleButton("Elipse");
+	final ToggleButton squareButton = new ToggleButton("Cuadrado");
+	final ToggleButton rectangleButton = new ToggleButton("Rectángulo");
+	final ToggleButton circleButton = new ToggleButton("Círculo");
+	final ToggleButton ellipseButton = new ToggleButton("Elipse");
 
-	ChoiceBox<BorderStyle> borderChoice = new ChoiceBox<>();
+	final ChoiceBox<BorderStyle> borderChoice = new ChoiceBox<>();
 
     private final Color defaultFillColor = Color.YELLOW;
     private final ColorPicker fillColorPicker = new ColorPicker(defaultFillColor);
@@ -77,14 +75,14 @@ public class PaintPane extends BorderPane {
     private final ToggleGroup layerVisibilityGroup   = new ToggleGroup();
     private final CheckBox    lockLayerBox           = new CheckBox("Bloquear Capa");
 
-	StatusPane statusPane;
+	final StatusPane statusPane;
 
 
 
-	Map<ToggleButton, FigureFactory> factoryMap = new HashMap<>();
-    Map<ToggleButton, FigureDrawer> drawerRegistry = new HashMap<>();
-    Map<CheckBox, EffectType> effects = new HashMap<>();
-    Map<Figure, FigureDrawer> drawerMap = new HashMap<>();
+	final Map<ToggleButton, FigureFactory> factoryMap = new HashMap<>();
+    final Map<ToggleButton, FigureDrawer> drawerRegistry = new HashMap<>();
+    final Map<CheckBox, EffectType> effects = new HashMap<>();
+    final Map<Figure, FigureDrawer> drawerMap = new HashMap<>();
 
 
 	private ToggleButton getSelectedFigureButton() {
@@ -95,7 +93,7 @@ public class PaintPane extends BorderPane {
 		}
 		return null;
 	}
-	ToggleButton[] toolsArr = {selectionButton,rectangleButton, circleButton, squareButton, ellipseButton};
+	final ToggleButton[] toolsArr = {selectionButton,rectangleButton, circleButton, squareButton, ellipseButton};
 
 
 

@@ -8,7 +8,6 @@ import backend.model.format.borderStyle;
 
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 
 public abstract class Figure implements Movable , Cloneable {
             private FigureFormatData format;

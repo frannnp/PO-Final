@@ -4,7 +4,6 @@ import backend.CanvasState;
 import backend.actions.Action;
 import backend.model.figures.Figure;
 import backend.model.format.FigureFormatData;
-import frontend.FigureFormat;
 
 public class PasteFormat implements Action {
     private final CanvasState canvas;

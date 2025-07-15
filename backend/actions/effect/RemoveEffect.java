@@ -1,7 +1,6 @@
 package backend.actions.effect;
 
 import backend.CanvasState;
-import backend.actions.Action;
 import backend.model.effects.EffectType;
 import backend.model.figures.Figure;
 

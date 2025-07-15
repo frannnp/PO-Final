@@ -2,7 +2,6 @@ package frontend;
 
 import backend.CanvasState;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 
 public class MainFrame extends VBox {
 
