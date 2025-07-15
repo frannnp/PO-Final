@@ -64,10 +64,10 @@ public class Ellipse extends Figure {
         double cy = centerPoint.getY();
 
         for (int i = 0; i < parts; i++) {
-            // cada sub-ellipse conserva el mismo alto (minorAxis)
-            // y tiene ancho sliceW, centrada en sub-centro
-            double subCenterX = leftX + sliceW * (i + 0.5);
-            slices.add(new Ellipse(new Point(subCenterX, cy), sliceW, minorAxis));
+            Figure slice = this.copyScaled(1.0 / parts, 1.0 /parts);
+            double offsetX = - mayorAxis/2 + sliceW/2 + i * sliceW;
+            slice.move(offsetX, 0);
+            slices.add(slice);
         }
         return slices;
     }
@@ -80,8 +80,10 @@ public class Ellipse extends Figure {
         double cx   = centerPoint.getX();
 
         for (int i = 0; i < parts; i++) {
-            double subCenterY = topY + sliceH * (i + 0.5);
-            slices.add(new Ellipse(new Point(cx, subCenterY), mayorAxis, sliceH));
+            Figure slice = this.copyScaled(1.0 / parts, 1.0 /parts);
+            double offsetY = - minorAxis/2 + sliceH/2 + i * sliceH;
+            slice.move(offsetY, 0);
+            slices.add(slice);
         }
         return slices;
     }

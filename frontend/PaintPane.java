@@ -117,8 +117,10 @@ public class PaintPane extends BorderPane {
             }
             @Override
             void onDragged(PaintPane pane, MouseEvent e){
+                pane.eventCurrent = new Point(e.getX(), e.getY());
+
                 if(pane.selectedFigure == null || pane.eventStart == null) return;
-                        double dx =  e.getX() -pane.eventStart.getX();double dy = e.getY() - pane.eventStart.getY();
+                        double dx =  e.getX() - pane.eventStart.getX();double dy = e.getY() - pane.eventStart.getY();
                         pane.canvasState.executeAction(
                         new MoveFigure(pane.canvasState, pane.selectedFigure, dx, dy)
                 );

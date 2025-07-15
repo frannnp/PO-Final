@@ -54,7 +54,7 @@ public class Rectangle extends Figure {
         double sliceW = width() / (double) parts;
         for (int i = 0; i < parts; i++) {
             Figure slice = this.copyScaled(1.0 / parts, 1.0 /parts);
-            slice.move(i * sliceW, 0);
+            slice.move(i * sliceW, height()/2-sliceW);
             slices.add(slice);
         }
         return slices;
@@ -67,7 +67,7 @@ public class Rectangle extends Figure {
 
         for (int i = 0; i < parts; i++) {
             Figure slice = this.copyScaled(1.0/parts, 1.0 / parts);
-            slice.move(0, i * sliceH);
+            slice.move(width()/2-sliceH, i * sliceH);
             slices.add(slice);
         }
         return slices;
