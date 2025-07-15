@@ -1,12 +1,21 @@
 package frontend;
 
 import backend.CanvasState;
+import backend.actions.effect.AddEffect;
+import backend.actions.effect.RemoveEffect;
 import backend.actions.figure.AddFigure;
 import backend.actions.figure.DeleteFigure;
 import backend.actions.format.ChangeBorderStyle;
+import backend.actions.format.ChangeFillColor;
+import backend.actions.format.CopyFormat;
+import backend.actions.format.PasteFormat;
+import backend.actions.operation.DivideHorizontal;
+import backend.actions.operation.DivideVertical;
 import backend.actions.operation.MoveFigure;
+import backend.actions.operation.MultiplyFigure;
 import backend.model.effects.EffectType;
 import backend.model.figures.*;
+import backend.model.format.ColorData;
 import backend.model.format.FigureFormatData;
 import frontend.drawers.*;
 import frontend.factory.*;
@@ -16,9 +25,11 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.shape.MoveTo;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -27,11 +38,11 @@ import java.util.Map;
 public class PaintPane extends BorderPane {
 
 	// BackEnd
-	CanvasState canvasState;
+    private  CanvasState canvasState;
 
 	// Canvas y relacionados
-	Canvas canvas = new Canvas(800, 600);
-	GraphicsContext gc = canvas.getGraphicsContext2D();
+    private final Canvas canvas = new Canvas(800, 600);
+    private final GraphicsContext gc = canvas.getGraphicsContext2D();
 
 
 	// Botones Barra Izquierda
@@ -45,15 +56,26 @@ public class PaintPane extends BorderPane {
 
 	ChoiceBox<BorderStyle> borderChoice = new ChoiceBox<>();
 
-    Color defaultFillColor = Color.YELLOW;
-	ColorPicker fillColorPicker = new ColorPicker(defaultFillColor);
+    private final Color defaultFillColor = Color.YELLOW;
+    private final ColorPicker fillColorPicker = new ColorPicker(defaultFillColor);
 
-    Button copyFormatButton = new Button("Copiar"); //todo
-    Button pasteFormatButton = new Button("Pastar");
+    private final Button copyFormatButton = new Button("Copiar"); //todo
+    private final  Button pasteFormatButton = new Button("Pastar");
 
-    Button undoButton = new Button("Deshacer");
-    Button redoButton = new Button("Rehacer");
+    private final    Button undoButton = new Button("Deshacer");
+    private final Button redoButton = new Button("Rehacer");
+    private final Button divideHorizontalButton = new Button("Dividir Ancho");
+    private final  Button divideVerticalButton = new Button("Dividir Alto");
+    private final Button multiplyButton = new Button("Multiplicar");
+    private final Button moveToButton = new Button("Trasladar");
 
+    private final ChoiceBox<String> layerChoice       = new ChoiceBox<>();
+    private final Button      addLayerBtn            = new Button("Agregar Capa");
+    private final Button      removeLayerBtn         = new Button("Eliminar Capa");
+    private final RadioButton showLayerBtn           = new RadioButton("Mostrar");
+    private final RadioButton hideLayerBtn           = new RadioButton("Ocultar");
+    private final ToggleGroup layerVisibilityGroup   = new ToggleGroup();
+    private final CheckBox    lockLayerBox           = new CheckBox("Bloquear Capa");
 
 	StatusPane statusPane;
 
@@ -62,9 +84,6 @@ public class PaintPane extends BorderPane {
 	Map<ToggleButton, FigureFactory> factoryMap = new HashMap<>();
     Map<ToggleButton, FigureDrawer> drawerRegistry = new HashMap<>();
     Map<CheckBox, EffectType> effects = new HashMap<>();
-
-	Map<Figure, FigureFormat> formatMap = new HashMap<>();
-    Map<Figure, EnumSet<EffectType>> effectMap = new HashMap<>();
     Map<Figure, FigureDrawer> drawerMap = new HashMap<>();
 
 
@@ -86,9 +105,11 @@ public class PaintPane extends BorderPane {
             void onPressed(PaintPane pane, MouseEvent e){
                 if(pane.hoveredFigure == null){
                     pane.statusPane.updateStatus("Ninguna figura encontrada");
+                    pane.copyFormatButton.setDisable(true);
                 }
                 else {
                     pane.statusPane.updateStatus(String.format("Se seleccionó: %s", pane.hoveredFigure));
+                    pane.copyFormatButton.setDisable(false);
                 }
                 pane.selectedFigure = pane.hoveredFigure;
                 pane.redrawCanvas();
@@ -96,14 +117,12 @@ public class PaintPane extends BorderPane {
             }
             @Override
             void onDragged(PaintPane pane, MouseEvent e){
-                if(pane.selectedFigure != null || pane.eventStart==null) return; //todo checquear si se puede draggear un mouse sin apretar
-                double dx = e.getX() - pane.eventStart.getX() ;
-                double dy = e.getY() - pane.eventStart.getY() ;
-                pane.canvasState.executeAction(
+                if(pane.selectedFigure == null || pane.eventStart == null) return;
+                        double dx =  e.getX() -pane.eventStart.getX();double dy = e.getY() - pane.eventStart.getY();
+                        pane.canvasState.executeAction(
                         new MoveFigure(pane.canvasState, pane.selectedFigure, dx, dy)
                 );
                 pane.redrawCanvas();
-                pane.eventStart.move(dx, dy);
             }
             @Override
             void onReleased(PaintPane pane, MouseEvent e) {
@@ -115,6 +134,7 @@ public class PaintPane extends BorderPane {
         }
             @Override
             void onDragged(PaintPane pane, MouseEvent e){
+            pane.eventCurrent = new Point(e.getX(), e.getY());
                 FigureFactory factory = pane.getActiveFactory();
                 if (factory == null || pane.eventStart==null ) return;
                 pane.previewFigure = factory.generateFigure(pane.eventStart, pane.eventCurrent);
@@ -123,9 +143,14 @@ public class PaintPane extends BorderPane {
             }
             @Override
             void onReleased(PaintPane pane, MouseEvent e) {
-                if (pane.previewFigure == null) return;
-                pane.canvasState.executeAction(new AddFigure(pane.canvasState, pane.previewFigure));
-                pane.registerFigure(pane.previewFigure, pane.getActiveDrawer());
+                Figure f = pane.previewFigure;
+                FigureDrawer drawer = pane.getActiveDrawer();
+                if (f == null) return;
+                if (drawer == null) {
+                    throw new IllegalStateException("No hay drawer para " + f.getClass());
+                }
+                pane.canvasState.executeAction(new AddFigure(pane.canvasState, f, pane.getCurrentFormatData(), pane.getEffects()));
+                pane.drawerMap.put(f,drawer);
                 pane.previewFigure = null;
                 pane.redrawCanvas();
             }
@@ -141,21 +166,6 @@ public class PaintPane extends BorderPane {
         return getFormat().toData();
     }
 
-    private void registerFigure(Figure f, FigureDrawer drawer) {
-        if (drawer == null) {
-            throw new IllegalStateException("No hay drawer para " + f.getClass());
-        }
-        for (EffectType e : getEffects()) {
-            //canvasState.executeAction(new AddEffect(f, e));
-        }
-        //canvasState.executeAction(new PasteFormat(f,getFormat()));
-        formatMap.put(f, getFormat());
-        effectMap.put(f, EnumSet.copyOf(getEffects()));
-        drawerMap.put(f,drawer); //todo probar
-
-        formatMap.put(f, getFormat());
-
-    }
 
     private void drawPreviewFigure() {
         if (previewFigure != null) {
@@ -204,7 +214,7 @@ public class PaintPane extends BorderPane {
     }
 
 
-	public PaintPane(CanvasState canvasState, StatusPane statusPane) {
+    public PaintPane(CanvasState canvasState, StatusPane statusPane) {
 		this.canvasState = canvasState;
 		this.statusPane = statusPane;
 
@@ -217,7 +227,7 @@ public class PaintPane extends BorderPane {
 		}
 
 
-		factoryMap.put(rectangleButton, new RectangleFactory());
+        factoryMap.put(rectangleButton, new RectangleFactory());
         drawerRegistry.put(rectangleButton, new RectangleDrawer());
 		factoryMap.put(ellipseButton, new EllipseFactory());
         drawerRegistry.put(ellipseButton,   new EllipseDrawer());
@@ -228,9 +238,18 @@ public class PaintPane extends BorderPane {
 
 		VBox buttonsBox = new VBox(10);
 		buttonsBox.getChildren().addAll(toolsArr);
-		buttonsBox.getChildren().add(fillColorPicker);
+        buttonsBox.getChildren().addAll(
+                deleteButton,fillColorPicker,borderChoice,copyFormatButton,pasteFormatButton,
+                divideHorizontalButton,
+                divideVerticalButton,
+                multiplyButton,
+                moveToButton
+        );
 
-		buttonsBox.getChildren().add(borderChoice);
+        undoButton.setDisable(true);
+        redoButton.setDisable(true);
+        copyFormatButton.setDisable(true);
+        pasteFormatButton.setDisable(true);
         buttonsBox.getChildren().addAll(undoButton, redoButton);
 
 		buttonsBox.setPadding(new Insets(5));
@@ -238,10 +257,82 @@ public class PaintPane extends BorderPane {
 		buttonsBox.setPrefWidth(100);
 		gc.setLineWidth(1);
 
+        layerChoice.getItems().setAll(canvasState.getLayerNames());
+        layerChoice.getSelectionModel().selectFirst();
 
+        addLayerBtn.setOnAction(e -> {
+            canvasState.addLayer();
+            layerChoice.getItems().setAll(canvasState.getLayerNames());
+            layerChoice.getSelectionModel().selectLast();
+            updateLayerControls();
+            redrawCanvas();
+        });
+        removeLayerBtn.setOnAction(e -> {
+            String sel = layerChoice.getValue();
+            canvasState.removeLayer(sel);
+            layerChoice.getItems().setAll(canvasState.getLayerNames());
+            layerChoice.getSelectionModel().selectFirst();
+            updateLayerControls();
+            redrawCanvas();
+        });
 
+        showLayerBtn.setToggleGroup(layerVisibilityGroup);
+        hideLayerBtn.setToggleGroup(layerVisibilityGroup);
+        showLayerBtn.setOnAction(e -> {
+            canvasState.setLayerVisible(layerChoice.getValue(), true);
+            redrawCanvas();
+        });
+        hideLayerBtn.setOnAction(e -> {
+            canvasState.setLayerVisible(layerChoice.getValue(), false);
+            redrawCanvas();
+        });
+        lockLayerBox.setOnAction(e -> {
+            canvasState.setLayerLocked(layerChoice.getValue(), lockLayerBox.isSelected());
+            updateLayerControls(); // para habilitar/deshabilitar botones si está bloqueada
+        });
+        layerChoice.getSelectionModel().selectedItemProperty().addListener((obs, old, nw) -> {
+            canvasState.setCurrentLayer(nw);
+            updateLayerControls();
+        });
+        HBox layersBar = new HBox(10,
+                new Label("Capas:"),
+                layerChoice,
+                addLayerBtn,
+                removeLayerBtn,
+                showLayerBtn,
+                hideLayerBtn,
+                lockLayerBox
+        );
+        layersBar.setPadding(new Insets(5));
+        setBottom(layersBar);
+        updateLayerControls();
+
+        multiplyButton.setOnAction(ev -> {
+            if (selectedFigure == null) return;
+            TextInputDialog dlg = new TextInputDialog("3");
+            dlg.setHeaderText("Multiplicar figura");
+            dlg.setContentText("Ingrese N (>0):");
+            dlg.showAndWait().ifPresent(str -> {try {
+                int n = Integer.parseInt(str);
+                MultiplyFigure action = new MultiplyFigure(canvasState, selectedFigure, n);
+                canvasState.executeAction(action);
+                FigureDrawer drawer = drawerMap.get(selectedFigure);
+                for (Figure f : action.getCreated()) {
+                    drawerMap.put(f, drawer);
+                }
+                selectedFigure = null;
+                redrawCanvas();
+                updateUndoRedoButtons();
+            } catch (NumberFormatException ex) {
+                showError("N debe ser un entero >0");
+            }
+            });
+        });
 		canvas.setOnMousePressed(e -> {
-            eventStart= eventCurrent;
+            eventStart   = new Point(e.getX(), e.getY());
+                    eventCurrent = new Point(e.getX(), e.getY());
+
+
             mode.onPressed(this, e);
         });
 		canvas.setOnMouseReleased(e -> {
@@ -267,12 +358,41 @@ public class PaintPane extends BorderPane {
         });
 
 		setLeft(buttonsBox);
-		setRight(canvas);
+		setCenter(canvas);
 
+        fillColorPicker.setOnAction(e -> {
+            if (selectedFigure != null) {
+                canvasState.executeAction(new ChangeFillColor(canvasState, selectedFigure, getCurrentFormatData().getFillColor()));
+                redrawCanvas();
+            }
+        });
+
+        borderChoice.setOnAction(e -> {
+            if (selectedFigure != null) {
+                canvasState.executeAction(new ChangeBorderStyle(canvasState, selectedFigure, getCurrentFormatData().getBorderStyle()));
+                redrawCanvas();
+            }
+        });
+        copyFormatButton.setOnAction(e -> {
+            if (selectedFigure != null) {
+            canvasState.executeAction(new CopyFormat(canvasState, selectedFigure));
+            pasteFormatButton.setDisable(false);
+            updateUndoRedoButtons();
+        }});
+        pasteFormatButton.setOnAction(e -> {
+            if (selectedFigure != null) {
+                canvasState.executeAction(new PasteFormat(canvasState, selectedFigure));
+                redrawCanvas();
+                updateUndoRedoButtons();
+            }
+        });
+
+        HBox effectsBar = new HBox(10);
+        effectsBar.setPadding(new Insets(5));
         for (EffectType type : EffectType.values()) {
             CheckBox box = new CheckBox(type.getDisplayName());
             effects.put(box, type);
-            buttonsBox.getChildren().add(box);
+            effectsBar.getChildren().add(box);
 
             box.setOnAction(e -> {
                 if (selectedFigure == null) {
@@ -281,14 +401,15 @@ public class PaintPane extends BorderPane {
                 }
                 boolean on = box.isSelected();
                 if (on) {
-                    //canvasState.executeAction(new AddEffect(selectedFigure, type));
-                    effectMap.get(selectedFigure).add(type);
+                    canvasState.executeAction(new AddEffect(canvasState,selectedFigure, type)); //todo
                 } else {
-                    //canvasState.executeAction(new RemoveEffect(selectedFigure, type));
-                    effectMap.get(selectedFigure).remove(type);
+                    canvasState.executeAction(new RemoveEffect(canvasState,selectedFigure, type));
                 }
+                redrawCanvas();
             });
         }
+        effectsBar.setStyle("-fx-background-color: #eee");
+        setTop(effectsBar);
 
         undoButton.setOnAction(e -> {
             canvasState.undo();
@@ -300,35 +421,127 @@ public class PaintPane extends BorderPane {
             redrawCanvas();
             updateUndoRedoButtons();
         });
+        divideHorizontalButton.setOnAction(e -> {
+            if (selectedFigure == null) return;
+            TextInputDialog dialog = new TextInputDialog("2");
+            dialog.setHeaderText("Dividir a lo ancho");
+            dialog.setContentText("Ingrese el valor de N:");
+            dialog.showAndWait().ifPresent(input -> {
+                try {
+                    int n = Integer.parseInt(input);
+                    if (n <= 0) throw new NumberFormatException();
+                    FigureDrawer drawer = drawerMap.get(selectedFigure);
+                    DivideHorizontal action = new DivideHorizontal(canvasState, selectedFigure, n);
+                    canvasState.executeAction(action);
+                    selectedFigure = null;
+                    for (Figure f : action.getCreated()) {
+                        drawerMap.put(f, drawer);
+                    }
+                    redrawCanvas();
+                } catch (NumberFormatException ex) {
+                    showError("Ingrese un número entero positivo válido.");
+                }
+            });
+            updateUndoRedoButtons();
 
+        });
+        divideVerticalButton.setOnAction(ev -> {
+            if (selectedFigure == null) return;
+            TextInputDialog dlg = new TextInputDialog("2");
+            dlg.setHeaderText("Dividir a lo alto");
+            dlg.setContentText("Ingrese N (>0):");
+            dlg.showAndWait().ifPresent(str -> {
+                try {
+                    int n = Integer.parseInt(str);
+                    DivideVertical action = new DivideVertical(canvasState, selectedFigure, n);
+                    FigureDrawer drawer = drawerMap.get(selectedFigure);
+                    canvasState.executeAction(action);
+                    for (Figure f : action.getCreated()) {
+                        drawerMap.put(f, drawer);
+                    }
+                    selectedFigure = null;
+                    redrawCanvas();
+                    updateUndoRedoButtons();
+                } catch (NumberFormatException ex) {
+                    showError("N debe ser un entero >0");
+                }
+            });                updateUndoRedoButtons();
+
+        });
+
+        moveToButton.setOnAction(e -> {
+            if (selectedFigure == null) return;
+            TextInputDialog dialog = new TextInputDialog("100,200");
+            dialog.setHeaderText("Trasladar figura");
+            dialog.setContentText("Ingrese coordenadas X,Y:");
+            dialog.showAndWait().ifPresent(input -> {
+                try {
+                    String[] parts = input.split(",");
+                    if (parts.length != 2) throw new IllegalArgumentException();
+                    double x = Double.parseDouble(parts[0].trim());
+                    double y = Double.parseDouble(parts[1].trim());
+                    canvasState.executeAction(new MoveFigure(canvasState, selectedFigure, x, y));//todo
+                    redrawCanvas();
+                } catch (Exception ex) {
+                    showError("Ingrese las coordenadas en formato válido: X,Y");
+                }
+            });                updateUndoRedoButtons();
+
+        });
         borderChoice.getItems().addAll(BorderStyle.values());
         borderChoice.setValue(BorderStyle.SOLID);
 
-        borderChoice.valueProperty().addListener((obs, old, nw) -> {
-            if (selectedFigure != null) {
-                canvasState.executeAction(new ChangeBorderStyle(selectedFigure, FormatMapper.toData(nw)));
-                redrawCanvas();
-            }
-        });
+
 
 	}
 
-	private void onMouseMoved(MouseEvent e) {
-		eventCurrent = new Point(e.getX(), e.getY());
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setHeaderText("Error");
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+    private void updateLayerControls() {
+        String name = layerChoice.getValue();
+        // obtengo la capa actual del modelo para conocer sus flags
+        // (asumimos que CanvasState expone métodos `isLayerVisible` e `isLayerLocked`)
+        boolean visible = canvasState.isLayerVisible(name);
+        boolean locked  = canvasState.isLayerLocked(name);
+        // Sincronizo los RadioButton y CheckBox
+        showLayerBtn.setSelected(visible);
+        hideLayerBtn.setSelected(!visible);
+        lockLayerBox.setSelected(locked);
+
+        removeLayerBtn.setDisable(locked);
+
+        // Si la capa está bloqueada, deshabilito botones de acción sobre ella
+        divideHorizontalButton.setDisable(locked);
+        divideVerticalButton.setDisable(locked);
+        multiplyButton.setDisable(locked);
+        moveToButton.setDisable(locked);
+        copyFormatButton.setDisable(locked);
+        pasteFormatButton.setDisable(locked);
+    }
+
+
+    private void onMouseMoved(MouseEvent e) {
+		Point mousePos = new Point(e.getX(), e.getY());
 		hoveredFigure = canvasState.findTopFigureInPoint(new Point(e.getX(), e.getY()));
+        if(selectedFigure != null) return;
 		if(hoveredFigure != null){
 			statusPane.updateStatus(hoveredFigure.toString());
 		} else {
-			statusPane.updateStatus(eventCurrent.toString());
+			statusPane.updateStatus(mousePos.toString());
 		}
 	}
 
     void redrawCanvas() {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        for (Figure f : canvasState.figures()) {
-            FigureFormat fmt    = formatMap.get(f);
+        for (Figure f : canvasState) {
+            FigureFormatData data = f.getFormat();
+            FigureFormat fmt      = new FigureFormat(data);
+            EnumSet<EffectType> efs = EnumSet.copyOf(f.getEffects());
             FigureDrawer dr     = drawerMap.get(f);
-            EnumSet<EffectType> efs = effectMap.getOrDefault(f, getEffects());
 
             if (f == selectedFigure) {
                 gc.setStroke(Color.RED);
@@ -339,6 +552,7 @@ public class PaintPane extends BorderPane {
 
             dr.draw(gc, fmt, f, efs);
         }
+        updateUndoRedoButtons();
     }
 
 

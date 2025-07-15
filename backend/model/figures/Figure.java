@@ -7,6 +7,7 @@ import backend.model.format.borderStyle;
 
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 public abstract class Figure implements Movable , Cloneable {
@@ -47,16 +48,14 @@ public abstract class Figure implements Movable , Cloneable {
         return copy;
     }
     public abstract Figure copyScaled(double scaleX, double scaleY);
-    public  Figure createHorizontalMirror(){
-        return copyScaled(-1,1);
-    }
-    public Figure createVerticalMirror(){
-        return copyScaled(1, -1);
-    }
 
-    private final Set<EffectType> effects = EnumSet.noneOf(EffectType.class);
+    public abstract List<Figure> divideHorizontally(int parts);
+    public abstract List<Figure> divideVertically(int parts);
 
-    public Set<EffectType> getEffects() {
+
+    private final EnumSet<EffectType> effects = EnumSet.noneOf(EffectType.class);
+
+    public EnumSet<EffectType> getEffects() {
         return effects;
     }
     public void addEffect(EffectType effect) {
@@ -66,23 +65,13 @@ public abstract class Figure implements Movable , Cloneable {
     public void removeEffect(EffectType effect) {
         effects.remove(effect);
     }
-
-    public void toggleEffect(EffectType effect) {
-        if (effects.contains(effect)) effects.remove(effect);
-        else effects.add(effect);
-    }
-
-
-    public boolean hasEffect(EffectType effect) {
-        return effects.contains(effect);
-    }
     public void setFillColor(ColorData c){
         format.setFillColor(c);
     }
     public void setBorder(borderStyle b){
         format.setBorderStyle(b);
     }
-    void setEffects(EnumSet<EffectType> e){
+    public void setEffects(EnumSet<EffectType> e){
         format.setEffects(e);
     }
 

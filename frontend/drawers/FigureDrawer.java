@@ -11,6 +11,7 @@ import java.util.EnumSet;
 public abstract class FigureDrawer {
     public void predraw(GraphicsContext gc, FigureFormat format, Figure figure){
         gc.setFill(format.getFillColor());
+        format.getBorderStyle().apply(gc);
     }
     public void postdraw(GraphicsContext gc, FigureFormat format, Figure figure){
         format.getBorderStyle().clear(gc);

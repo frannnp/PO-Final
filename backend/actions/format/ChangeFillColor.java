@@ -1,27 +1,31 @@
 package backend.actions.format;
 
+import backend.CanvasState;
 import backend.actions.Action;
+import backend.model.figures.Figure;
 import backend.model.format.ColorData;
-import backend.model.format.FigureFormatData;
 
 public class ChangeFillColor implements Action {
-    private final FigureFormatData format;
+    private final CanvasState canvas;
     private final ColorData oldColor;
     private final ColorData newColor;
-    public ChangeFillColor(FigureFormatData format, ColorData oldColor, ColorData newColor) {
-        this.format = format;
-        this.oldColor = oldColor;
+    private final Figure figure;
+
+    public ChangeFillColor(CanvasState canvas, Figure f,ColorData newColor) {
+        this.canvas = canvas;
+        this.figure = f;
+        this.oldColor = figure.getFormat().getFillColor();
         this.newColor = newColor;
     }
 
     @Override
     public void execute() {
-        format.setFillColor(newColor);
+        canvas.setFillColor(figure,newColor);
     }
 
     @Override
     public void undo() {
-        format.setFillColor(oldColor);
+        canvas.setFillColor(figure,oldColor);
     }
 }
 
